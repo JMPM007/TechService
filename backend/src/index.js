@@ -1,6 +1,9 @@
 import express from "express"
 import cors from "cors"
-import pool from "./db.js"
+import process from "node:process"
+import pool from "./config/db.js"
+import userRoutes from "./routes/userRoutes.js"
+
 
 const app = express()
 
@@ -16,6 +19,10 @@ app.get("/api/test-db", async(req, res) => {
     }
 })
 
-app.listen(3000, () =>{
-    console.log("Servidor ejecutandose en http://localhost:3000")
+app.use("/api/usuarios", userRoutes)
+
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () =>{
+    console.log(`Servidor ejecutandose en http://localhost:${PORT}`)
 })
