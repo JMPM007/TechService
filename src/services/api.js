@@ -8,15 +8,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiRequest(path, options = {}) {
+async function request(path, options, requireToken) {
+  const headers = new Headers(options.headers)
   const token = localStorage.getItem('techservice_token')
 
-  if (!token) {
-    throw new ApiError('Debes iniciar sesión para realizar esta acción.', 401)
-  }
+  if (requireToken) {
+    if (!token) {
+      throw new ApiError('Debes iniciar sesión para realizar esta acción.', 401)
+    }
 
-  const headers = new Headers(options.headers)
-  headers.set('Authorization', `Bearer ${token}`)
+    headers.set('Authorization', `Bearer ${token}`)
+  }
 
   if (options.body) {
     headers.set('Content-Type', 'application/json')
@@ -43,4 +45,12 @@ export async function apiRequest(path, options = {}) {
   }
 
   return body
+}
+
+export function apiRequest(path, options = {}) {
+  return request(path, options, true)
+}
+
+export function publicApiRequest(path, options = {}) {
+  return request(path, options, false)
 }

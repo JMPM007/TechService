@@ -99,3 +99,17 @@ button:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.login-card {
+  max-width: 480px;
+}
+
+.secondary-button {
+  margin-top: 12px;
+  color: #0f766e;
+  background: #d9f2ef;
+}
+
+.secondary-button:hover {
+  background: #bce5df;
+}

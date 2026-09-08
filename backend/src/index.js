@@ -2,12 +2,15 @@ import express from 'express'
 import cors from 'cors'
 import pool from './config/db.js'
 import profileRoutes from './routes/profileRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 
 const app = express()
 const port = Number(process.env.PORT) || 3000
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/api/usuarios', userRoutes)
 
 app.get('/api/test-db', async (req, res) => {
   try {

@@ -1,4 +1,11 @@
-import { apiRequest } from './api'
+import { apiRequest, publicApiRequest } from './api'
+
+export function loginUser(data) {
+  return publicApiRequest('/usuarios/login', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
 
 export async function getMyProfile() {
   const response = await apiRequest('/perfil/me')

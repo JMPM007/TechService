@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   changeMyPassword,
   getMyProfile,
+  loginUser,
   updateMyProfile,
 } from './services/profileService'
 import './App.css'
@@ -13,6 +14,9 @@ const emptyPasswordForm = {
 }
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(
+    () => Boolean(localStorage.getItem('techservice_token')),
+  )
   const [profile, setProfile] = useState(null)
   const [profileForm, setProfileForm] = useState({
     nombre: '',
@@ -24,6 +28,16 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!authenticated) {
+      setLoading(false)
+    }
+  }, [authenticated])
+
+  useEffect(() => {
+    if (!authenticated) {
+      return undefined
+    }
+
     async function loadProfile() {
       try {
         const usuario = await getMyProfile()
@@ -40,7 +54,41 @@ function App() {
     }
 
     loadProfile()
-  }, [])
+    return undefined
+  }, [authenticated])
+
+  async function handleLogin(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+    setLoading(true)
+
+    const formData = new FormData(event.currentTarget)
+
+    try {
+      const response = await loginUser({
+        email: formData.get('email'),
+        password: formData.get('password'),
+      })
+      localStorage.setItem('techservice_token', response.token)
+      setAuthenticated(true)
+      setProfile(response.usuario)
+      setProfileForm({
+        nombre: response.usuario.nombre,
+        email: response.usuario.email,
+      })
+    } catch (requestError) {
+      setError(requestError.message)
+      setLoading(false)
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('techservice_token')
+    setAuthenticated(false)
+    setProfile(null)
+    setLoading(false)
+  }
 
   function handleProfileChange(event) {
     const { name, value } = event.target
@@ -92,12 +140,41 @@ function App() {
     return <main className="page"><p>Cargando perfil...</p></main>
   }
 
+  if (!authenticated) {
+    return (
+      <main className="page login-page">
+        <header>
+          <p className="eyebrow">TechService</p>
+          <h1>Iniciar sesión</h1>
+          <p>Accede para consultar y actualizar tu perfil.</p>
+        </header>
+
+        {error && <p className="alert error">{error}</p>}
+
+        <section className="card login-card">
+          <form onSubmit={handleLogin}>
+            <label htmlFor="login-email">Correo electrónico</label>
+            <input id="login-email" name="email" type="email" required />
+
+            <label htmlFor="login-password">Contraseña</label>
+            <input id="login-password" name="password" type="password" required />
+
+            <button type="submit">Iniciar sesión</button>
+          </form>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="page">
       <header>
         <p className="eyebrow">TechService</p>
         <h1>Mi perfil</h1>
         <p>Actualiza tus datos personales y la contraseña de tu cuenta.</p>
+        <button className="secondary-button" type="button" onClick={handleLogout}>
+          Cerrar sesión
+        </button>
       </header>
 
       {message && <p className="alert success">{message}</p>}
