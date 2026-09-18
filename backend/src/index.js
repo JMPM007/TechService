@@ -3,6 +3,7 @@ import cors from "cors"
 import process from "node:process"
 import pool from "./config/db.js"
 import userRoutes from "./routes/userRoutes.js"
+import technicianRoutes from "./routes/technicianRoutes.js"
 
 
 const app = express()
@@ -20,6 +21,7 @@ app.get("/api/test-db", async(req, res) => {
 })
 
 app.use("/api/usuarios", userRoutes)
+app.use("/api/tecnicos", technicianRoutes)
 
 
 const PORT = process.env.PORT || 3000
