@@ -1,37 +1,45 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../services/authService";
-import "../Css/Login.css";
+import { registerUser } from "../services/authService";
+import "../Css/Register.css";
 
-export function Login() {
+export function Register() {
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({
+  const [formData, setFormData] = useState({
+    nombre: "",
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje("");
 
-    try {
-      const res = await loginUser(credentials);
+    if (formData.password !== formData.confirmPassword) {
+      setMensaje("Las contraseñas no coinciden.");
+      return;
+    }
 
-      if (res.token) {
-        localStorage.setItem("token", res.token);
-        if (res.usuario) {
-          localStorage.setItem("rol", res.usuario.rol);
-        }
-        navigate("/dashboard");
+    try {
+      const res = await registerUser({
+        nombre: formData.nombre,
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (res.error) {
+        setMensaje(`Error: ${res.error}`);
       } else {
-        setMensaje(res.message || res.error || "Credenciales incorrectas.");
+        navigate("/login");
       }
     } catch {
       setMensaje("Error al conectar con el servidor.");
@@ -43,12 +51,23 @@ export function Login() {
       <div className="auth-brand">TECHSERVICE</div>
 
       <div className="auth-header">
-        <h1>Iniciar sesión</h1>
-        <p>Ingresa tus datos para acceder a tu cuenta.</p>
+        <h1>Crear cuenta</h1>
+        <p>Regístrate para acceder a los servicios de TechService.</p>
       </div>
 
       <div className="auth-card">
         <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Nombre completo</label>
+            <input
+              className="auth-input"
+              type="text"
+              name="nombre"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
           <div className="form-group">
             <label>Correo electrónico</label>
             <input
@@ -80,14 +99,34 @@ export function Login() {
             </div>
           </div>
 
+          <div className="form-group">
+            <label>Confirmar contraseña</label>
+            <div className="input-container">
+              <input
+                className="auth-input"
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
+          </div>
+
           <button className="submit-btn" type="submit">
-            Iniciar sesión
+            Crear cuenta
           </button>
         </form>
 
         <div className="auth-footer">
-          <Link to="/register" className="auth-link">
-            ¿No tienes cuenta? Regístrate
+          <Link to="/login" className="auth-link">
+            Ya tengo una cuenta
           </Link>
         </div>
 
