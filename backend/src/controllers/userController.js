@@ -57,15 +57,17 @@ export const createUser = async (req, res) =>{
 
     const {nombre, email, password, rol} = req.body
 
-    if(!nombre || !email || !password || !rol){
+    if(!nombre || !email || !password ){
         return res.status(400).json({
             error: "El sistema requiere nombre, email, contraseña y rol como campos obligatorios"
             
         })
     }
 
+    const assignedRol = (rol || "CLIENTE").trim().toUpperCase()
+
     const allowedRoles = ["ADMIN", "TECNICO", "CLIENTE"]
-    if (!allowedRoles.includes(rol.trim().toUpperCase())){
+    if (!allowedRoles.includes(assignedRol)){
         return res.status(400).json({
             error : "El sistema no permite crear usuarios sin un rol valido (ADMIN, TECNICO, CLIENTE)"
         })
@@ -93,12 +95,12 @@ export const createUser = async (req, res) =>{
             nombre, 
             email, 
             password: hashedPassword, 
-            rol: rol.toUpperCase()
+            rol: assignedRol
         })
 
         return res.status(201).json({
             mensaje: "El sistema registro el usuario exitosamente",
-            usuario: {id, nombre, email, rol: rol.toUpperCase()}
+            usuario: {id, nombre, email, rol: assignedRol}
         })
 
     } catch (error) {
@@ -107,4 +109,3 @@ export const createUser = async (req, res) =>{
     }
 
 }
-

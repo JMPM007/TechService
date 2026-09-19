@@ -26,10 +26,20 @@ export function Login() {
 
       if (res.token) {
         localStorage.setItem("token", res.token);
-        if (res.usuario) {
-          localStorage.setItem("rol", res.usuario.rol);
+        
+        const rol = res.usuario?.rol;
+        if (rol) {
+          localStorage.setItem("rol", rol);
         }
-        navigate("/dashboard");
+
+        // Redirección condicional según el rol devuelto por el backend
+        if (rol === "ADMIN") {
+          navigate("/admin-panel");
+        } else if (rol === "TECNICO") {
+          navigate("/tecnico-panel");
+        } else {
+          navigate("/cliente-panel");
+        }
       } else {
         setMensaje(res.message || res.error || "Credenciales incorrectas.");
       }
