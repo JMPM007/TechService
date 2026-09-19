@@ -24,6 +24,7 @@ app.use("/api/usuarios", userRoutes)
 app.use("/api/tecnicos", technicianRoutes)
 
 
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () =>{
     console.log(`Servidor ejecutandose en http://localhost:${PORT}`)

@@ -5,6 +5,7 @@ import { RegisterTechnician } from './Pages/RegisterTechnician.jsx';
 import { TechDashboard } from './Pages/TechDashboard.jsx';
 import { ClientDashboard } from './Pages/ClientDashboard.jsx';
 import './App.css'; 
+import { TechnicianList } from './Pages/TechnicianList.jsx';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
@@ -34,7 +35,7 @@ const AdminLayout = () => {
             to="/admin-panel" 
             className={`nav-link ${location.pathname === '/admin-panel' ? 'active' : ''}`}
           >
-            Inicio
+            Inicio (Lista de tecnicos)
           </Link>
           <Link 
             to="/admin-panel/tecnicos" 
@@ -70,14 +71,8 @@ export default function App() {
             </ProtectedRoute>
           } 
         >
-          <Route index element={
-            <div style={{ width: '100%', maxWidth: '440px' }}>
-              <div className="auth-header">
-                <h1>Panel de Administración</h1>
-                <p>Bienvenido al sistema de gestión de TechService.</p>
-              </div>
-            </div>
-          } />
+
+          <Route index element={TechnicianList} />
           <Route path="tecnicos" element={<RegisterTechnician />} />
         </Route>
         
@@ -94,7 +89,7 @@ export default function App() {
           path="/cliente-panel" 
           element={
             <ProtectedRoute allowedRoles={['CLIENTE']}>
-              <ClientDashboard />
+              <ClientDashboard  />
             </ProtectedRoute>
           } 
         />

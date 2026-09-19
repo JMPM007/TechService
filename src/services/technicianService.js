@@ -32,3 +32,21 @@ export const registerTechnician = async (technicianData) => {
   return data;
 };
 
+
+export const getTechniciansService = async (token) => {
+  const response = await fetch(API_URL, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Error al obtener la lista de técnicos");
+  }
+
+  return data;
+};
+

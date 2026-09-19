@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs"
-import {createTechnicianBD, findTechnicianByCedula, findTechnicianByTelefono} from "../models/tecnicoModel.js"
+import {createTechnicianBD, findTechnicianByCedula, findTechnicianByTelefono, getAllTechniciansBD} from "../models/tecnicoModel.js"
 import { findUserByEmail, createUserBD } from "../models/userModel.js"
 
 export const createTechnician = async (req, res) => {
@@ -21,10 +21,10 @@ export const createTechnician = async (req, res) => {
 
         const telefonoExists = await findTechnicianByTelefono(telefono);
         if (telefonoExists) {
-        return res.status(400).json({
-            error: "El número de teléfono ya se encuentra registrado con otro técnico."
-        });
-}
+            return res.status(400).json({
+                error: "El número de teléfono ya se encuentra registrado con otro técnico."
+            });
+        }
 
 
         const cedulaExist = await findTechnicianByCedula(cedula)
@@ -34,8 +34,6 @@ export const createTechnician = async (req, res) => {
                 error: "La cedula ya se encuentra registrada"
             })
         }
-
-
 
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
@@ -61,3 +59,14 @@ export const createTechnician = async (req, res) => {
     }
 
 }
+
+export const getTechnicians = async (req, res) => {
+    try {
+        const tecnicos = await getAllTechniciansBD();
+        return res.status(200).json(tecnicos);
+    } catch (error) {
+        return res.status(500).json({
+            error: "Error al obtener la lista de técnicos: " + error.message
+        });
+    }
+};

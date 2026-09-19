@@ -20,3 +20,23 @@ export const createTechnicianBD = async ({usuario_id, cedula, telefono, especial
     return result
 }
 
+
+export const getAllTechniciansBD = async () => {
+    const query = `
+        SELECT 
+        t.id AS tecnico_id,
+        u.id AS usuario_id,
+        u.nombre,
+        u.email,
+        t.cedula,
+        t.telefono,
+        t.especialidad,
+        t.estado
+        FROM tecnicos t
+        INNER JOIN usuarios u ON t.usuario_id = u.id
+        ORDER BY u.nombre ASC
+    `;
+    const [rows] = await pool.query(query);
+    return rows;
+};
+
