@@ -6,6 +6,7 @@ const router = Router()
 
 router.post("/", createUser)
 router.post("/login", loginUser)
+router.post("/register", createUser)
 
 
 router.get("/perfil", verifyToken, (req, res)=>{
