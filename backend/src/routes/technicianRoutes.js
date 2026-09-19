@@ -5,6 +5,6 @@ import { authorizeRoles, verifyToken } from "../../middleware/authMiddleware.js"
 
 const router = Router()
 
-router.post("/", verifyToken, authorizeRoles("ADMIN"), createTechnician)
+router.post("/register", verifyToken, authorizeRoles("ADMIN"), createTechnician)
 
 export default router

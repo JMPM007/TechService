@@ -3,7 +3,7 @@ import process from "node:process"
 
 
 export const verifyToken = (req, res, next) =>{
-    const authHeader = req.headers["autorizacion"]
+    const authHeader = req.headers["authorization"]
     const token = authHeader && authHeader.split(" ")[1]
 
     if(!token){

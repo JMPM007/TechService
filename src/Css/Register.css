@@ -1,4 +1,3 @@
-/* Reset total para eliminar márgenes del navegador y líneas laterales */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -9,7 +8,6 @@ html, body, #root {
   border: none !important;
 }
 
-/* Envoltorio principal que centra el formulario en toda la pantalla */
 .auth-wrapper {
   min-height: 100vh;
   width: 100%;
@@ -22,7 +20,6 @@ html, body, #root {
   position: relative;
 }
 
-/* Marca en la esquina superior izquierda */
 .auth-brand {
   position: absolute;
   top: 2rem;
@@ -33,7 +30,6 @@ html, body, #root {
   letter-spacing: 0.5px;
 }
 
-/* Encabezado sobre la tarjeta */
 .auth-header {
   text-align: left;
   width: 100%;
@@ -54,7 +50,6 @@ html, body, #root {
   font-size: 1rem;
 }
 
-/* Tarjeta blanca central */
 .auth-card {
   background: #ffffff;
   border-radius: 12px;
@@ -92,7 +87,6 @@ html, body, #root {
   width: 100%;
 }
 
-/* Forzar fondo blanco y texto oscuro en los inputs */
 .auth-input {
   width: 100%;
   padding: 0.75rem 0.9rem;
@@ -109,7 +103,6 @@ html, body, #root {
   border-color: #0b6b61;
 }
 
-/* Botón de Mostrar/Ocultar dentro del input */
 .toggle-password {
   position: absolute;
   right: 12px;
@@ -122,11 +115,10 @@ html, body, #root {
   padding: 0;
 }
 
-/* Botón verde principal */
 .submit-btn {
   align-self: flex-start;
   background-color: #0b6b61;
-  color: #ffffff;
+  color: #020202;
   border: none;
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
