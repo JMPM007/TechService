@@ -5,6 +5,14 @@ export const findTechnicianByCedula = async(cedula) =>{
     return rows[0]
 }
 
+export const findTechnicianByTelefono = async (telefono) => {
+  const [rows] = await pool.query(
+    "SELECT * FROM tecnicos WHERE telefono = ?",
+    [telefono]
+  );
+  return rows[0];
+};
+
 
 export const createTechnicianBD = async ({usuario_id, cedula, telefono, especialidad}) => {
     const [result] = await pool.query("INSERT INTO tecnicos (usuario_id, cedula, telefono, especialidad) VALUES (?,?,?,?)",

@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs"
-import {createTechnicianBD, findTechnicianByCedula} from "../models/tecnicoModel.js"
+import {createTechnicianBD, findTechnicianByCedula, findTechnicianByTelefono} from "../models/tecnicoModel.js"
 import { findUserByEmail, createUserBD } from "../models/userModel.js"
 
 export const createTechnician = async (req, res) => {
@@ -18,6 +18,14 @@ export const createTechnician = async (req, res) => {
                 error:"El correo ya se encuentra registrado"
             })
         }
+
+        const telefonoExists = await findTechnicianByTelefono(telefono);
+        if (telefonoExists) {
+        return res.status(400).json({
+            error: "El número de teléfono ya se encuentra registrado con otro técnico."
+        });
+}
+
 
         const cedulaExist = await findTechnicianByCedula(cedula)
 
