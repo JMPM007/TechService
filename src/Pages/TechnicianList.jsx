@@ -1,40 +1,71 @@
 import { useEffect, useState } from "react";
-import { getTechniciansService } from "../services/technicianService";
+import {getTechniciansService, updateTechnicianStatusService} from "../services/technicianService";
 import "../Css/Technician.css";
 
 export function TechnicianList() {
   const [tecnicos, setTecnicos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
 
-  // Estados para búsqueda y filtros (Criterio 3)
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEspecialidad, setFilterEspecialidad] = useState("TODAS");
   const [filterEstado, setFilterEstado] = useState("TODOS");
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchTechnicians = async () => {
       try {
         const token = localStorage.getItem("token");
         const data = await getTechniciansService(token);
-        setTecnicos(data);
+        if (isMounted) {
+          setTecnicos(data);
+        }
       } catch (err) {
-        setError(err.message);
+        if (isMounted) {
+          setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTechnicians();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Obtener lista única de especialidades para el select de filtro
+  // Manejador para el cambio de estado dinámico
+  const handleStatusChange = async (tecnicoId, nuevoEstado) => {
+    try {
+      setActionMessage("");
+      const token = localStorage.getItem("token");
+      await updateTechnicianStatusService(tecnicoId, nuevoEstado, token);
+
+      // Actualizar el estado localmente sin re-recargar toda la página
+      setTecnicos((prev) =>
+        prev.map((tec) =>
+          tec.tecnico_id === tecnicoId ? { ...tec, estado: nuevoEstado } : tec
+        )
+      );
+
+      setActionMessage("Estado actualizado con éxito");
+      setTimeout(() => setActionMessage(""), 3000);
+    } catch (err) {
+      alert(`Error al actualizar estado: ${err.message}`);
+    }
+  };
+
   const especialidadesUnicas = [
     "TODAS",
     ...new Set(tecnicos.map((t) => t.especialidad).filter(Boolean))
   ];
 
-  // Lógica de filtrado dinámico (Criterio 3)
   const tecnicosFiltrados = tecnicos.filter((tec) => {
     const coincideBusqueda =
       tec.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,9 +88,13 @@ export function TechnicianList() {
       <div className="auth-header">
         <h1>Directorio de Técnicos y Disponibilidad</h1>
         <p>Gestión y monitoreo del personal operativo.</p>
+        {actionMessage && (
+          <span className="status-message success" style={{ fontSize: "0.9rem" }}>
+            {actionMessage}
+          </span>
+        )}
       </div>
 
-      {/* Criterio 3: Barra de Búsqueda y Filtros */}
       <div className="filter-bar">
         <input
           type="text"
@@ -93,7 +128,6 @@ export function TechnicianList() {
         </select>
       </div>
 
-      {/* Criterio 1: Tabla Parametrizada */}
       <table className="data-table">
         <thead>
           <tr>
@@ -123,11 +157,16 @@ export function TechnicianList() {
                   <small style={{ color: "#666" }}>{tec.telefono}</small>
                 </td>
                 <td>{tec.especialidad}</td>
-                {/* Criterio 2: Indicador Dinámico de Estado */}
                 <td>
-                  <span className={`badge badge-${tec.estado.toLowerCase()}`}>
-                    {tec.estado}
-                  </span>
+                  <select
+                    className={`select-status badge-${tec.estado.toLowerCase()}`}
+                    value={tec.estado}
+                    onChange={(e) => handleStatusChange(tec.tecnico_id, e.target.value)}
+                  >
+                    <option value="DISPONIBLE">DISPONIBLE</option>
+                    <option value="OCUPADO">OCUPADO</option>
+                    <option value="INACTIVO">INACTIVO</option>
+                  </select>
                 </td>
               </tr>
             ))

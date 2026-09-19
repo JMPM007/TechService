@@ -40,3 +40,9 @@ export const getAllTechniciansBD = async () => {
     return rows;
 };
 
+
+export const updateTechnicianStatusBD = async (tecnicoId, nuevoEstado) => {
+  const query = `UPDATE tecnicos SET estado = ? WHERE id = ?`;
+  const [result] = await pool.query(query, [nuevoEstado, tecnicoId]);
+  return result;
+};

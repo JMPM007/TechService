@@ -32,6 +32,23 @@ export const registerTechnician = async (technicianData) => {
   return data;
 };
 
+export const updateTechnicianStatusService = async (tecnicoId, nuevoEstado, token) => {
+  const response = await fetch(`${API_URL}/${tecnicoId}/estado`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ estado: nuevoEstado })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Error al actualizar el estado del técnico");
+  }
+
+  return data;
+};
 
 export const getTechniciansService = async (token) => {
   const response = await fetch(API_URL, {

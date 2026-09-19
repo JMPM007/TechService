@@ -72,7 +72,7 @@ export default function App() {
           } 
         >
 
-          <Route index element={TechnicianList} />
+          <Route index element={<TechnicianList />} />
           <Route path="tecnicos" element={<RegisterTechnician />} />
         </Route>
         
@@ -80,7 +80,7 @@ export default function App() {
           path="/tecnico-panel" 
           element={
             <ProtectedRoute allowedRoles={['TECNICO']}>
-              <TechDashboard />
+              <TechDashboard  />
             </ProtectedRoute>
           } 
         />

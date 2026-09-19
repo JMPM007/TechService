@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs"
-import {createTechnicianBD, findTechnicianByCedula, findTechnicianByTelefono, getAllTechniciansBD} from "../models/tecnicoModel.js"
+import {createTechnicianBD, findTechnicianByCedula, findTechnicianByTelefono, getAllTechniciansBD, updateTechnicianStatusBD} from "../models/tecnicoModel.js"
 import { findUserByEmail, createUserBD } from "../models/userModel.js"
 
 export const createTechnician = async (req, res) => {
@@ -69,4 +69,21 @@ export const getTechnicians = async (req, res) => {
             error: "Error al obtener la lista de técnicos: " + error.message
         });
     }
+};
+
+export const updateTechnicianStatus = async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+
+  const estadosValidos = ["DISPONIBLE", "OCUPADO", "INACTIVO"];
+  if (!estadosValidos.includes(estado)) {
+    return res.status(400).json({ error: "Estado no válido." });
+  }
+
+  try {
+    await updateTechnicianStatusBD(id, estado);
+    return res.status(200).json({ mensaje: "Estado del técnico actualizado correctamente." });
+  } catch (error) {
+    return res.status(500).json({ error: "Error al actualizar estado: " + error.message });
+  }
 };
