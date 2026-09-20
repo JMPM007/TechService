@@ -40,14 +40,13 @@ export function TechnicianList() {
     };
   }, []);
 
-  // Manejador para el cambio de estado dinámico
+
   const handleStatusChange = async (tecnicoId, nuevoEstado) => {
     try {
       setActionMessage("");
       const token = localStorage.getItem("token");
       await updateTechnicianStatusService(tecnicoId, nuevoEstado, token);
-
-      // Actualizar el estado localmente sin re-recargar toda la página
+      
       setTecnicos((prev) =>
         prev.map((tec) =>
           tec.tecnico_id === tecnicoId ? { ...tec, estado: nuevoEstado } : tec

@@ -184,10 +184,6 @@
   color: #c5221f;
 }
 
-/* ==========================================================================
-   Mejora del Select Interactivo de Estado (.select-status)
-   ========================================================================== */
-
 .select-status {
   padding: 6px 28px 6px 14px;
   font-size: 0.82rem;
@@ -206,7 +202,6 @@
   background-position: right 10px center;
 }
 
-/* Estado DISPONIBLE (Verde Teal #0b6b61) */
 .select-status.badge-disponible {
   background-color: #e6f4ea;
   color: #0b6b61;
@@ -214,7 +209,6 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%200b6b61' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
 }
 
-/* Estado OCUPADO (Dorado #b06000) */
 .select-status.badge-ocupado {
   background-color: #fef7e0;
   color: #b06000;
@@ -222,7 +216,6 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%20b06000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
 }
 
-/* Estado INACTIVO (Rojo #c5221f) */
 .select-status.badge-inactivo {
   background-color: #fce8e6;
   color: #c5221f;

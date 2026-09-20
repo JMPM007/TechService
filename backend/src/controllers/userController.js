@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs"
 import { findUserByEmail, createUserBD } from "../models/userModel.js"
+import { crearCliente } from "../models/clienteModel.js"
 import jwt from "jsonwebtoken"
 import process from "node:process"
 
@@ -94,9 +95,30 @@ export const createUser = async (req, res) =>{
             rol: assignedRol
         })
 
+        let clienteInfo = null
+
+        if (assignedRol === "CLIENTE") {
+            try {
+                const cedulaVirtual = `USR-${id}`
+                clienteInfo = await crearCliente({
+                    usuario_id: id,
+                    cedula: cedulaVirtual,
+                    nombres: nombre,
+                    apellidos: "Por completar",
+                    telefono: "No proporcionado",
+                    email: email
+                })
+            } catch (clienteError) {
+                console.error("Error creando cliente automático:", clienteError)
+            }
+        }
+
+
+
+
         return res.status(201).json({
             mensaje: "El sistema registro el usuario exitosamente",
-            usuario: {id, nombre, email, rol: assignedRol}
+            usuario: {id, nombre, email, rol: assignedRol, clienteInfo: clienteInfo?.id || null}
         })
 
     } catch (error) {
