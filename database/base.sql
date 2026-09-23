@@ -9,3 +9,7 @@ INSERT INTO clientes (cedula, nombres, apellidos, telefono, email) VALUES
 ("100123456", "Juan", "Barrios", "3004112899", "juan@gmail.com"),
 ("100987654", "Andrea", "Rodriguez", "3045702349", "andrea@gmail.com")
 ON DUPLICATE KEY UPDATE id = id;
+
+INSERT INTO ordenes (cliente_id, tecnico_id, estado, descripcion_falla) VALUES
+(1, NULL, "Registrada", "El equipo no enciende")
+ON DUPLICATE KEY UPDATE id = id;

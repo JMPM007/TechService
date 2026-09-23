@@ -19,3 +19,27 @@ CREATE TABLE IF NOT EXISTS clientes(
     email VARCHAR(100) UNIQUE NOT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS ordenes(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    equipo_id INT NULL,
+    tecnico_id INT NULL,
+    estado ENUM("Registrada", "Asignada", "En proceso", "Finalizada", "Cerrada") NOT NULL DEFAULT "Registrada",
+    descripcion_falla TEXT NULL,
+    observaciones_cierre TEXT NULL,
+    fecha_asignacion TIMESTAMP NULL,
+    fecha_cierre TIMESTAMP NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (tecnico_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE IF NOT EXISTS historial_estados_orden(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL,
+    estado_anterior VARCHAR(30) NULL,
+    estado_nuevo VARCHAR(30) NOT NULL,
+    cambiado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes(id)
+);

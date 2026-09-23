@@ -2,6 +2,8 @@ import express from "express"
 import cors from "cors"
 import pool from "./config/db.js"
 import clienteRoutes from "./routes/clienteRoutes.js"
+import ordenRoutes from "./routes/ordenRoutes.js"
+
 
 const app = express()
 
@@ -9,6 +11,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use("/api", clienteRoutes)
+app.use("/api", ordenRoutes)
 
 app.get("/api/test-db", async(req, res) => {
     try {
