@@ -7,6 +7,13 @@ export function loginUser(data) {
   })
 }
 
+export function registerUser(data) {
+  return publicApiRequest('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
 export async function getMyProfile() {
   const response = await apiRequest('/perfil/me')
   return response.usuario

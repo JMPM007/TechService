@@ -38,8 +38,12 @@ async function request(path, options, requireToken) {
   const body = await response.json().catch(() => null)
 
   if (!response.ok) {
+    const details = Array.isArray(body?.detalles)
+      ? ` ${body.detalles.join(' ')}`
+      : ''
+    const message = body?.mensaje ?? body?.error ?? 'No fue posible procesar la solicitud.'
     throw new ApiError(
-      body?.mensaje ?? 'No fue posible procesar la solicitud.',
+      `${message}${details}`,
       response.status,
     )
   }
