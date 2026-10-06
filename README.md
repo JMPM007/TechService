@@ -31,10 +31,18 @@ Autenticación	JWT + bcrypt
 Control de versiones	Git + GitHub
 
 Estructura del repositorio.
-├── backend/       
-├── database/  
-├── .gitignore
-└── README.md
+├── main    
+├── develop
+├── feature/HU16-17-18-gestion-ordenes
+├── feature/HU-01_Crear_usuario-HU-02_login
+├──feature/HU-11-LISTA-DISPONIBILIDAD
+├──feature/HU-12-REGISTRAR-EQUIPO
+├──feature/hu-06-perfil-contrasena
+├──feature/hu-08-client-management
+├──feature/hu-10-Registrar-Tecnico
+├──feature/registro-cliente
+...
+
 
 
 Rama	Propósito	Reglas
