@@ -1,16 +1,70 @@
-# React + Vite
+## Descripción
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Los pequeños y medianos negocios de mantenimiento y reparación de computadores,
+celulares y otros dispositivos tecnológicos suelen gestionar clientes, equipos y
+Órdenes de forma dispersa: cuadernos, hojas de cálculo o herramientas aisladas.
+Esto genera pérdida o duplicidad de información, dificultad para conocer el estado
+de una reparación, confusión sobre los equipos que permanecen en el local y
+Ausencia de un historial organizado de servicios.
 
-Currently, two official plugins are available:
+Este proyecto es una plataforma web que centraliza la gestión y el seguimiento
+de las órdenes de servicio técnico, desde la recepción del equipo hasta su entrega
+y la consulta del historial. Permite registrar clientes, dispositivos y técnicos;
+documentar fallas y diagnósticos; generar cotizaciones con aprobación o rechazo;
+registrar servicios y repuestos utilizados; controlar el acceso mediante roles
+(Administrador, Técnico y Cliente) y conservar un historial de las operaciones
+relevantes.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Objetivo: desarrollar en un máximo de 11 semanas una plataforma funcional que
+Mejore la organización, la trazabilidad y la eficiencia del proceso de
+Servicio técnico.
 
-## React Compiler
+> Proyecto académico (MVP) desarrollado para Proyecto Informático I,
+> Universidad Autónoma de Occidente, Cali, 2026.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+Capa	Tecnología
+Frontend	React + Vite
+Backend	Node.js + Express
+Base de datos	mysql2
+Autenticación	JWT + bcrypt
+Control de versiones	Git + GitHub
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Estructura del repositorio.
+├── main    
+├── develop
+├── feature/HU16-17-18-gestion-ordenes
+├── feature/HU-01_Crear_usuario-HU-02_login
+├──feature/HU-11-LISTA-DISPONIBILIDAD
+├──feature/HU-12-REGISTRAR-EQUIPO
+├──feature/hu-06-perfil-contrasena
+├──feature/hu-08-client-management
+├──feature/hu-10-Registrar-Tecnico
+├──feature/registro-cliente
+...
+
+
+
+Rama	Propósito	Reglas
+main	Versión estable / demostrable	Solo recibe merges desde develop vía Pull Request. Nunca se hace push directo.
+develop	Integración del trabajo en curso	Recibe las ramas de trabajo vía Pull Request.
+feature/<nombre>	Nueva funcionalidad	Sale de develop, vuelve a develop.
+fix/<nombre>	Corrección de errores	Sale de develop, vuelve a develop.
+docs/<nombre>	Documentación	Sale de develop, vuelve a develop.
+hotfix/<nombre>	Error urgente en main	Sale de main, vuelve a main y a develop.
+
+Flujo de trabajo
+Actualizar develop: git checkout develop && git pull origin develop
+Crear rama de trabajo: git checkout -b feature/gestion-clientes
+Hacer commits pequeños siguiendo la convención.
+Subir la rama: git push -u origin feature/gestion-clientes
+Abrir un Pull Request hacia develop, con al menos 1 revisión de otro integrante.
+Resolver conflictos en local (git merge develop dentro de tu rama) antes de aprobar.
+
+Equipo
+Juan Miguel Perdomo Muñoz
+Juan Camilo Gonzales Rodas
+José David Aguirre
+Gabriel Armando Gil
+
+
