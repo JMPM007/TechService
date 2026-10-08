@@ -41,8 +41,8 @@ export function Register() {
       } else {
         navigate("/login");
       }
-    } catch {
-      setMensaje("Error al conectar con el servidor.");
+    } catch (error) {
+      setMensaje(error.message || "Error al conectar con el servidor.");
     }
   };
 

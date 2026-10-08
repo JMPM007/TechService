@@ -1,85 +1,107 @@
-const BASE_URL = "/api"
+const apiUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api').replace(/\/$/, '')
 
-async function handleResponse(response) {
-  const data = await response.json()
-  if (!response.ok) {
-    const errorMsg = data.error || data.detalles?.join(", ") || "Error en la petición"
-    const error = new Error(errorMsg)
-    error.status = response.status
-    error.data = data
-    throw error
+export class ApiError extends Error {
+  constructor(message, status, data = null) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.data = data
   }
-  return data
+}
+
+async function request(path, options = {}, requireToken = true) {
+  const headers = new Headers(options.headers)
+  const token = localStorage.getItem('techservice_token') || localStorage.getItem('token')
+
+  if (requireToken) {
+    if (!token) {
+      throw new ApiError('Debes iniciar sesión para realizar esta acción.', 401)
+    }
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  if (options.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiUrl}${path}`, { ...options, headers })
+  } catch (error) {
+    throw new ApiError('No fue posible conectar con el servidor.', 0, error)
+  }
+
+  const body = await response.json().catch(() => null)
+  if (!response.ok) {
+    const details = Array.isArray(body?.detalles) ? ` ${body.detalles.join(' ')}` : ''
+    const message = body?.mensaje ?? body?.error ?? 'No fue posible procesar la solicitud.'
+    throw new ApiError(`${message}${details}`, response.status, body)
+  }
+
+  return body
+}
+
+export function apiRequest(path, options = {}) {
+  return request(path, options)
+}
+
+export function publicApiRequest(path, options = {}) {
+  return request(path, options, false)
 }
 
 export const api = {
-  // Equipos
-  async getEquipos(search = "") {
-    const url = search ? `${BASE_URL}/equipos?search=${encodeURIComponent(search)}` : `${BASE_URL}/equipos`
-    const res = await fetch(url)
-    return handleResponse(res)
+  getEquipos(search = '') {
+    const query = search ? `?search=${encodeURIComponent(search)}` : ''
+    return apiRequest(`/equipos${query}`)
   },
 
-  async getEquipoById(id) {
-    const res = await fetch(`${BASE_URL}/equipos/${id}`)
-    return handleResponse(res)
+  getEquipoById(id) {
+    return apiRequest(`/equipos/${id}`)
   },
 
-  async getEquipoBySerie(serie) {
-    const res = await fetch(`${BASE_URL}/equipos/serie/${encodeURIComponent(serie)}`)
-    return handleResponse(res)
+  getEquipoBySerie(serie) {
+    return apiRequest(`/equipos/serie/${encodeURIComponent(serie)}`)
   },
 
-  async updateEquipo(id, equipoData) {
-    const res = await fetch(`${BASE_URL}/equipos/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(equipoData)
+  updateEquipo(id, equipoData) {
+    return apiRequest(`/equipos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(equipoData),
     })
-    return handleResponse(res)
   },
 
-  async createEquipo(equipoData) {
-    const res = await fetch(`${BASE_URL}/equipos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(equipoData)
+  createEquipo(equipoData) {
+    return apiRequest('/equipos', {
+      method: 'POST',
+      body: JSON.stringify(equipoData),
     })
-    return handleResponse(res)
   },
 
-  // Órdenes de servicio
-  async getOrdenes({ search = "", estado = "" } = {}) {
+  getOrdenes({ search = '', estado = '' } = {}) {
     const params = new URLSearchParams()
-    if (search) params.append("search", search)
-    if (estado) params.append("estado", estado)
-    const queryString = params.toString() ? `?${params.toString()}` : ""
-    const res = await fetch(`${BASE_URL}/ordenes${queryString}`)
-    return handleResponse(res)
+    if (search) params.set('search', search)
+    if (estado) params.set('estado', estado)
+    const query = params.toString() ? `?${params}` : ''
+    return apiRequest(`/ordenes${query}`)
   },
 
-  async getOrdenById(id) {
-    const res = await fetch(`${BASE_URL}/ordenes/${id}`)
-    return handleResponse(res)
+  getOrdenById(id) {
+    return apiRequest(`/ordenes/${id}`)
   },
 
-  async createOrden(ordenData) {
-    const res = await fetch(`${BASE_URL}/ordenes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ordenData)
+  createOrden(orderData) {
+    return apiRequest('/ordenes/servicio', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
     })
-    return handleResponse(res)
   },
 
-  // Clientes y Técnicos
-  async getClientes() {
-    const res = await fetch(`${BASE_URL}/clientes`)
-    return handleResponse(res)
+  getClientes(search = '') {
+    const query = search ? `?search=${encodeURIComponent(search)}` : ''
+    return apiRequest(`/clientes${query}`)
   },
 
-  async getTecnicos() {
-    const res = await fetch(`${BASE_URL}/clientes/tecnicos`)
-    return handleResponse(res)
-  }
+  getTecnicos() {
+    return apiRequest('/clientes/tecnicos')
+  },
 }

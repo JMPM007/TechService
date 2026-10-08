@@ -27,20 +27,26 @@
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
-  font-family: var(--font-sans);
-  background-color: var(--bg-page);
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--bg-page);
   color: var(--text-main);
+  font-family: var(--font-sans);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

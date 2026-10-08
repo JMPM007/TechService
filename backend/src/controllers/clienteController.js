@@ -5,6 +5,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const TELEFONO_REGEX = /^[0-9]{7,15}$/
 
 export const ClienteController = {
+  // HU-13: Obtener listado general de clientes con filtro de búsqueda
   async getClientes(req, res) {
     try {
       const search = req.query.search || ""
@@ -16,6 +17,7 @@ export const ClienteController = {
     }
   },
 
+  // HU-13: Obtener detalles de un cliente por su ID
   async getClienteById(req, res) {
     try {
       const cliente = await ClienteModel.findById(req.params.id)
@@ -27,6 +29,7 @@ export const ClienteController = {
     }
   },
 
+  // Buscar cliente por cédula (Validaciones locales unificadas)
   async getClienteByCedula(req, res) {
     try {
       const { cedula } = req.params
@@ -46,6 +49,7 @@ export const ClienteController = {
     }
   },
 
+  // Registrar cliente unificado (Validaciones estrictas + campos adaptados)
   async createCliente(req, res) {
     try {
       const { cedula, nombres, apellidos, direccion, telefono, email } = req.body ?? {}
@@ -79,6 +83,7 @@ export const ClienteController = {
     }
   },
 
+  // Actualizar características del cliente
   async updateCliente(req, res) {
     try {
       const id = parseInt(req.params.id, 10)
@@ -101,6 +106,7 @@ export const ClienteController = {
     }
   },
 
+  // Listar técnicos asignables
   async getTecnicos(req, res) {
     try {
       const tecnicos = await ClienteModel.findTecnicos()
