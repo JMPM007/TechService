@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react'
 import { api } from '../services/api'
 
 export default function ListaOrdenes({ onNuevaOrden, highlightOrdenId }) {
@@ -32,6 +33,7 @@ export default function ListaOrdenes({ onNuevaOrden, highlightOrdenId }) {
 
   useEffect(() => {
     loadOrdenes()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEstado])
 
   const handleSearchSubmit = (e) => {

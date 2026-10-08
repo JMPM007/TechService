@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../services/api'
 
 const emptyClient = { cedula: '', nombre: '', direccion: '', telefono: '', email: '' }
 
+// eslint-disable-next-line no-unused-vars
 export default function DirectorioClientes({ onCrearEquipoConCliente }) {
   const [search, setSearch] = useState('')
   const [clients, setClients] = useState([])

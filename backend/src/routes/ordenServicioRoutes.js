@@ -1,15 +1,15 @@
 import { Router } from "express"
 import { OrdenServicioController } from "../controllers/ordenServicioController.js"
+import { asignarOrden, actualizarEstado, cerrarOrden } from "../controllers/ordenController.js"
 
 const router = Router()
 
-// HU-15: Crear orden de servicio
 router.post("/", OrdenServicioController.createOrden)
-
-// HU-15 (Criterio 9): Consultar órdenes de servicio registradas
 router.get("/", OrdenServicioController.getOrdenes)
-
-// Obtener detalle de orden por ID
 router.get("/:id", OrdenServicioController.getOrdenById)
+
+router.patch("/:id/asignar", asignarOrden)
+router.patch("/:id/estado", actualizarEstado)
+router.patch("/:id/cerrar", cerrarOrden)
 
 export default router

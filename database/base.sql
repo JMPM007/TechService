@@ -18,5 +18,6 @@ ON DUPLICATE KEY UPDATE id = id;
 
 INSERT INTO ordenes_servicio (id, codigo_orden, equipo_id, tecnico_id, motivo_ingreso, tipo_servicio, prioridad, estado, costo_estimado, abono_inicial, observaciones_recepcion) VALUES
 (1, 'OS-2026-0001', 1, 2, 'El equipo presenta lentitud extrema al abrir programas pesados y se calienta.', 'Mantenimiento Preventivo', 'MEDIA', 'EN_PROCESO', 120000.00, 50000.00, 'Se recibe con cargador original tipo C. Equipo enciende correctamente.'),
-(2, 'OS-2026-0002', 2, 2, 'Mantenimiento preventivo general y cambio de pasta térmica por altas temperaturas en juegos.', 'Mantenimiento Preventivo', 'ALTA', 'PENDIENTE', 180000.00, 0.00, 'Se recibe con cargador y maletín en excelentes condiciones.')
+(2, 'OS-2026-0002', 2, 2, 'Mantenimiento preventivo general y cambio de pasta térmica por altas temperaturas en juegos.', 'Mantenimiento Preventivo', 'ALTA', 'PENDIENTE', 180000.00, 0.00, 'Se recibe con cargador y maletín en excelentes condiciones.'),
+(3, 'OS-2026-0003', 1, NULL, 'El equipo no enciende', 'Diagnóstico Técnico', 'ALTA', 'PENDIENTE', 0.00, 0.00, 'Registro básico migrado de la HU de gestión de órdenes.')
 ON DUPLICATE KEY UPDATE id = id;

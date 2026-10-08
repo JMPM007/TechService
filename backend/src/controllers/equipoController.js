@@ -146,7 +146,7 @@ export const EquipoController = {
 
       // Actualizar datos
       const updatedEquipo = await EquipoModel.update(id, {
-        tipo_equipo: tipo_equipo.trim(),
+        tipo: tipo_equipo.trim(),
         marca: marca.trim(),
         modelo: modelo.trim(),
         numero_serie: numero_serie.trim(),
@@ -221,7 +221,7 @@ export const EquipoController = {
       const nuevoEquipo = await EquipoModel.create({
         cliente_id,
         numero_serie: numero_serie.trim(),
-        tipo_equipo: tipo_equipo.trim(),
+        tipo: tipo_equipo.trim(),
         marca: marca.trim(),
         modelo: modelo.trim(),
         procesador: procesador?.trim(),

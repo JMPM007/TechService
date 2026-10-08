@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS clientes(
     apellidos VARCHAR(100) NOT NULL,
     direccion VARCHAR(200) NULL,
     telefono VARCHAR(20) NOT NULL,
-    email VARCHAR(100) UNIQUE NULL,
+    email VARCHAR(100) UNIQUE NOT NULL, 
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
 );
@@ -81,8 +81,20 @@ CREATE TABLE IF NOT EXISTS ordenes_servicio (
     costo_estimado DECIMAL(10, 2) DEFAULT 0.00,
     abono_inicial DECIMAL(10, 2) DEFAULT 0.00,
     observaciones_recepcion TEXT NULL,
+    observaciones_cierre TEXT NULL,
+    fecha_asignacion TIMESTAMP NULL,
+    fecha_cierre TIMESTAMP NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE CASCADE,
     FOREIGN KEY (tecnico_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS historial_estados_orden(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL,
+    estado_anterior VARCHAR(30) NULL,
+    estado_nuevo VARCHAR(30) NOT NULL,
+    cambiado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE CASCADE
 );

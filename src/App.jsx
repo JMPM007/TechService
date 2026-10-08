@@ -1,13 +1,16 @@
-<<<<<<< HEAD
 import { BrowserRouter, Routes, Route, Navigate, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Register } from './Pages/Register.jsx';
 import { Login } from './Pages/Login.jsx';
 import { RegisterTechnician } from './Pages/RegisterTechnician.jsx'; 
 import { TechDashboard } from './Pages/TechDashboard.jsx';
 import { ClientDashboard } from './Pages/ClientDashboard.jsx';
-import { ClienteForm } from './components/ClienteForm.jsx';
 import { TechnicianList } from './Pages/TechnicianList.jsx';
-import { EquiposForm } from './Pages/EquiposForm.jsx'; 
+
+import DirectorioClientes from './components/DirectorioClientes.jsx';
+import OrdenesPanel from './components/OrdenesPanel.jsx'; 
+
+import RegistrarEquipo from './components/RegistrarEquipo.jsx';
+
 import './App.css'; 
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -34,39 +37,15 @@ const AdminLayout = () => {
       <aside className="admin-sidebar">
         <div className="sidebar-brand">TechService Admin</div>
         <nav className="sidebar-nav">
-          <Link 
-            to="/admin-panel" 
-            className={`nav-link ${location.pathname === '/admin-panel' ? 'active' : ''}`}
-          >
-            Inicio
-          </Link>
-          <Link 
-            to="/admin-panel/tecnicos" 
-            className={`nav-link ${location.pathname === '/admin-panel/tecnicos' ? 'active' : ''}`}
-          >
-            Registrar Técnico
-          </Link>
-          <Link 
-            to="/admin-panel/clientes" 
-            className={`nav-link ${location.pathname === '/admin-panel/clientes' ? 'active' : ''}`}
-          >
-            Registrar Cliente  
-          </Link>
-          <Link 
-            to="/admin-panel/recepcion" 
-            className={`nav-link ${location.pathname === '/admin-panel/recepcion' ? 'active' : ''}`}
-          >
-            Recepción de Equipos
-          </Link>
+          <Link to="/admin-panel" className={`nav-link ${location.pathname === '/admin-panel' ? 'active' : ''}`}>Inicio</Link>
+          <Link to="/admin-panel/tecnicos" className={`nav-link ${location.pathname === '/admin-panel/tecnicos' ? 'active' : ''}`}>Registrar Técnico</Link>
+          <Link to="/admin-panel/clientes" className={`nav-link ${location.pathname === '/admin-panel/clientes' ? 'active' : ''}`}>Directorio de Clientes</Link>
+          <Link to="/admin-panel/recepcion" className={`nav-link ${location.pathname === '/admin-panel/recepcion' ? 'active' : ''}`}>Recepción de Equipos</Link>
+          <Link to="/admin-panel/ordenes" className={`nav-link ${location.pathname === '/admin-panel/ordenes' ? 'active' : ''}`}>Órdenes de Servicio</Link>
         </nav>
-        <button onClick={handleLogout} className="btn-logout">
-          Cerrar Sesión
-        </button>
+        <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
       </aside>
-
-      <main className="admin-content">
-        <Outlet />
-      </main>
+      <main className="admin-content"><Outlet /></main>
     </div>
   );
 };
@@ -85,33 +64,14 @@ const TechLayout = () => {
       <aside className="admin-sidebar">
         <div className="sidebar-brand">TechService Técnico</div>
         <nav className="sidebar-nav">
-          <Link 
-            to="/tecnico-panel" 
-            className={`nav-link ${location.pathname === '/tecnico-panel' ? 'active' : ''}`}
-          >
-            Inicio
-          </Link>
-          <Link 
-            to="/tecnico-panel/clientes" 
-            className={`nav-link ${location.pathname === '/tecnico-panel/clientes' ? 'active' : ''}`}
-          >
-            Registrar Cliente
-          </Link>
-          <Link 
-            to="/tecnico-panel/recepcion" 
-            className={`nav-link ${location.pathname === '/tecnico-panel/recepcion' ? 'active' : ''}`}
-          >
-            Recepción de Equipos
-          </Link>
+          <Link to="/tecnico-panel" className={`nav-link ${location.pathname === '/tecnico-panel' ? 'active' : ''}`}>Inicio</Link>
+          <Link to="/tecnico-panel/clientes" className={`nav-link ${location.pathname === '/tecnico-panel/clientes' ? 'active' : ''}`}>Directorio de Clientes</Link>
+          <Link to="/tecnico-panel/recepcion" className={`nav-link ${location.pathname === '/tecnico-panel/recepcion' ? 'active' : ''}`}>Recepción de Equipos</Link>
+          <Link to="/tecnico-panel/ordenes" className={`nav-link ${location.pathname === '/tecnico-panel/ordenes' ? 'active' : ''}`}>Órdenes de Servicio</Link>
         </nav>
-        <button onClick={handleLogout} className="btn-logout">
-          Cerrar Sesión
-        </button>
+        <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
       </aside>
-
-      <main className="admin-content">
-        <Outlet />
-      </main>
+      <main className="admin-content"><Outlet /></main>
     </div>
   );
 };
@@ -123,6 +83,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
+        {/* Rutas Protegidas de Administración */}
         <Route 
           path="/admin-panel" 
           element={
@@ -133,10 +94,12 @@ export default function App() {
         >
           <Route index element={<TechnicianList />} />
           <Route path="tecnicos" element={<RegisterTechnician />} />
-          <Route path="clientes" element={<ClienteForm />} />
-          <Route path="recepcion" element={<EquiposForm />} />
+          <Route path="clientes" element={<DirectorioClientes />} /> {/* Tu directorio optimizado */}
+          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
+          <Route path="ordenes" element={<OrdenesPanel />} /> {/* Panel de órdenes global del equipo */}
         </Route>
         
+        {/* Rutas Protegidas de Técnicos */}
         <Route 
           path="/tecnico-panel" 
           element={
@@ -146,10 +109,12 @@ export default function App() {
           } 
         >
           <Route index element={<TechDashboard />} />
-          <Route path="clientes" element={<ClienteForm />} />
-          <Route path="recepcion" element={<EquiposForm />} />
+          <Route path="clientes" element={<DirectorioClientes />} />
+          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
+          <Route path="ordenes" element={<OrdenesPanel />} />
         </Route>
 
+        {/* Panel del Cliente Final */}
         <Route 
           path="/cliente-panel" 
           element={
@@ -159,81 +124,9 @@ export default function App() {
           } 
         />
         
+        {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
-=======
-import React, { useState } from 'react'
-import Navbar from './components/Navbar'
-import DirectorioClientes from './components/DirectorioClientes'
-import FichaTecnica from './components/FichaTecnica'
-import CrearOrdenServicio from './components/CrearOrdenServicio'
-import ListaOrdenes from './components/ListaOrdenes'
-import RegistrarEquipo from './components/RegistrarEquipo'
-import './App.css'
-
-export default function App() {
-  // Iniciar en 'clientes' para ver el directorio de clientes integrado
-  const [activeTab, setActiveTab] = useState('clientes')
-  const [preselectedEquipo, setPreselectedEquipo] = useState(null)
-  const [highlightOrdenId, setHighlightOrdenId] = useState(null)
-
-  const handleCrearOrdenConEquipo = (equipo) => {
-    setPreselectedEquipo(equipo)
-    setActiveTab('crear-orden')
-  }
-
-  const handleOrdenCreada = (orden) => {
-    setHighlightOrdenId(orden.id)
-  }
-
-  const handleIrAOrdenes = () => {
-    setActiveTab('ordenes')
-  }
-
-  const handleIrAFicha = (equipoId) => {
-    setActiveTab('fichas')
-  }
-
-  return (
-    <main className="app-shell">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      {activeTab === 'clientes' && (
-        <DirectorioClientes />
-      )}
-
-      {activeTab === 'fichas' && (
-        <FichaTecnica onCrearOrdenConEquipo={handleCrearOrdenConEquipo} />
-      )}
-
-      {activeTab === 'crear-orden' && (
-        <CrearOrdenServicio
-          preselectedEquipo={preselectedEquipo}
-          onOrdenCreada={handleOrdenCreada}
-          onIrAOrdenes={handleIrAOrdenes}
-        />
-      )}
-
-      {activeTab === 'ordenes' && (
-        <ListaOrdenes
-          onNuevaOrden={() => {
-            setPreselectedEquipo(null)
-            setActiveTab('crear-orden')
-          }}
-          highlightOrdenId={highlightOrdenId}
-        />
-      )}
-
-      {activeTab === 'recepcion' && (
-        <RegistrarEquipo
-          onEquipoRegistrado={() => {}}
-          onIrAFicha={handleIrAFicha}
-        />
-      )}
-    </main>
-  )
-}
->>>>>>> origin/HU-13-14-15

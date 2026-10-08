@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -96,7 +95,7 @@ html, body, #root {
   width: 100%;
   max-width: 440px;
   margin-bottom: 1.25rem;
-=======
+}
 /* TECHSERVICE DESIGN SYSTEM - VERDE EDITORIAL */
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&display=swap');
 
@@ -122,6 +121,7 @@ html, body, #root {
   --font-mono: 'DM Mono', monospace;
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
 
 * {
   box-sizing: border-box;
@@ -1058,7 +1058,7 @@ h2 {
   .full-width { grid-column: auto; }
   .form-footer { align-items: stretch; flex-direction: column; }
   .save-button { width: 100%; }
->>>>>>> origin/HU-13-14-15
+
 }
 
 .auth-header h1 {
@@ -1153,4 +1153,12 @@ h2 {
 
 .status-message.success {
   color: #0b6b61;
+}
+
+.navbar {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    background-color: #1f2937;
+    align-items: center;
 }
