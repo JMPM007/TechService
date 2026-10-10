@@ -11,6 +11,7 @@ import DiagnosisPanel from './components/DiagnosisPanel'
 import QuotePanel from './components/QuotePanel'
 import OperationsPanel from './components/OperationsPanel'
 import ClientsPanel from './components/ClientsPanel'
+import RepuestosPanel from './components/RepuestosPanel'
 import './App.css'
 
 const emptyPasswordForm = {
@@ -344,7 +345,8 @@ function App() {
       ['clientes', 'Clientes'],
       ['historial', 'Historial'],
         ['operaciones', 'Operaciones'],
-        ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+      ['repuestos', 'Repuestos'],
+      ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
         ['cotizacion', 'Cotizaciones'],
       ]
     : [['perfil', 'Mi cuenta']]
@@ -389,7 +391,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -516,6 +518,7 @@ function App() {
         </div>
 
         {activeView === 'clientes' && isStaff && <ClientsPanel />}
+        {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
         {activeView === 'cotizacion' && isStaff && <QuotePanel />}
         {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}

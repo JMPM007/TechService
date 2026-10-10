@@ -126,3 +126,29 @@ CREATE TABLE IF NOT EXISTS cotizacion_conceptos (
     CHECK (cantidad > 0),
     CHECK (precio_unitario >= 0)
 );
+
+CREATE TABLE IF NOT EXISTS repuestos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    precio_unitario DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CHECK (stock >= 0),
+    CHECK (precio_unitario >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS orden_repuestos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL,
+    repuesto_id INT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12, 2) NOT NULL,
+    subtotal DECIMAL(12, 2) NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
+    FOREIGN KEY (repuesto_id) REFERENCES repuestos(id) ON DELETE RESTRICT,
+    CHECK (cantidad > 0)
+);
+
