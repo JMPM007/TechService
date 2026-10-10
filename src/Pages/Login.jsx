@@ -26,7 +26,6 @@ export function Login() {
 
       if (res.token) {
         localStorage.setItem("token", res.token);
-        localStorage.setItem("techservice_token", res.token);
         
         const rol = res.usuario?.rol;
         if (rol) {
@@ -41,10 +40,10 @@ export function Login() {
           navigate("/cliente-panel");
         }
       } else {
-        setMensaje(res.mensaje || res.message || res.error || "Credenciales incorrectas.");
+        setMensaje(res.message || res.error || "Credenciales incorrectas.");
       }
-    } catch (error) {
-      setMensaje(error.message || "Error al conectar con el servidor.");
+    } catch {
+      setMensaje("Error al conectar con el servidor.");
     }
   };
 
