@@ -1,132 +1,527 @@
-import { BrowserRouter, Routes, Route, Navigate, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Register } from './Pages/Register.jsx';
-import { Login } from './Pages/Login.jsx';
-import { RegisterTechnician } from './Pages/RegisterTechnician.jsx'; 
-import { TechDashboard } from './Pages/TechDashboard.jsx';
-import { ClientDashboard } from './Pages/ClientDashboard.jsx';
-import { TechnicianList } from './Pages/TechnicianList.jsx';
+import { useEffect, useState } from 'react'
+import {
+  changeMyPassword,
+  getMyProfile,
+  loginUser,
+  registerUser,
+  updateMyProfile,
+} from './services/profileService'
+import { getOrderHistory } from './services/orderService'
+import DiagnosisPanel from './components/DiagnosisPanel'
+import QuotePanel from './components/QuotePanel'
+import OperationsPanel from './components/OperationsPanel'
+import ClientsPanel from './components/ClientsPanel'
+import './App.css'
 
-import DirectorioClientes from './components/DirectorioClientes.jsx';
-import OrdenesPanel from './components/OrdenesPanel.jsx'; 
-
-import RegistrarEquipo from './components/RegistrarEquipo.jsx';
-
-import './App.css'; 
-
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const token = localStorage.getItem('token');
-  const rol = localStorage.getItem('rol');
-
-  if (!token) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(rol)) return <Navigate to="/login" replace />;
-
-  return children || <Outlet />;
-};
-
-const AdminLayout = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  return (
-    <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="sidebar-brand">TechService Admin</div>
-        <nav className="sidebar-nav">
-          <Link to="/admin-panel" className={`nav-link ${location.pathname === '/admin-panel' ? 'active' : ''}`}>Inicio</Link>
-          <Link to="/admin-panel/tecnicos" className={`nav-link ${location.pathname === '/admin-panel/tecnicos' ? 'active' : ''}`}>Registrar Técnico</Link>
-          <Link to="/admin-panel/clientes" className={`nav-link ${location.pathname === '/admin-panel/clientes' ? 'active' : ''}`}>Directorio de Clientes</Link>
-          <Link to="/admin-panel/recepcion" className={`nav-link ${location.pathname === '/admin-panel/recepcion' ? 'active' : ''}`}>Recepción de Equipos</Link>
-          <Link to="/admin-panel/ordenes" className={`nav-link ${location.pathname === '/admin-panel/ordenes' ? 'active' : ''}`}>Órdenes de Servicio</Link>
-        </nav>
-        <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
-      </aside>
-      <main className="admin-content"><Outlet /></main>
-    </div>
-  );
-};
-
-const TechLayout = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  return (
-    <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="sidebar-brand">TechService Técnico</div>
-        <nav className="sidebar-nav">
-          <Link to="/tecnico-panel" className={`nav-link ${location.pathname === '/tecnico-panel' ? 'active' : ''}`}>Inicio</Link>
-          <Link to="/tecnico-panel/clientes" className={`nav-link ${location.pathname === '/tecnico-panel/clientes' ? 'active' : ''}`}>Directorio de Clientes</Link>
-          <Link to="/tecnico-panel/recepcion" className={`nav-link ${location.pathname === '/tecnico-panel/recepcion' ? 'active' : ''}`}>Recepción de Equipos</Link>
-          <Link to="/tecnico-panel/ordenes" className={`nav-link ${location.pathname === '/tecnico-panel/ordenes' ? 'active' : ''}`}>Órdenes de Servicio</Link>
-        </nav>
-        <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
-      </aside>
-      <main className="admin-content"><Outlet /></main>
-    </div>
-  );
-};
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* Rutas Protegidas de Administración */}
-        <Route 
-          path="/admin-panel" 
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          } 
-        >
-          <Route index element={<TechnicianList />} />
-          <Route path="tecnicos" element={<RegisterTechnician />} />
-          <Route path="clientes" element={<DirectorioClientes />} /> {/* Tu directorio optimizado */}
-          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
-          <Route path="ordenes" element={<OrdenesPanel />} /> {/* Panel de órdenes global del equipo */}
-        </Route>
-        
-        {/* Rutas Protegidas de Técnicos */}
-        <Route 
-          path="/tecnico-panel" 
-          element={
-            <ProtectedRoute allowedRoles={['TECNICO']}>
-              <TechLayout />
-            </ProtectedRoute>
-          } 
-        >
-          <Route index element={<TechDashboard />} />
-          <Route path="clientes" element={<DirectorioClientes />} />
-          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
-          <Route path="ordenes" element={<OrdenesPanel />} />
-        </Route>
-
-        {/* Panel del Cliente Final */}
-        <Route 
-          path="/cliente-panel" 
-          element={
-            <ProtectedRoute allowedRoles={['CLIENTE']}>
-              <ClientDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Redirección por defecto */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+const emptyPasswordForm = {
+  contrasenaActual: '',
+  nuevaContrasena: '',
+  confirmacionContrasena: '',
 }
+
+function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="password-field">
+      <input
+        id={id}
+        name={name}
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        autoComplete={autoComplete}
+        minLength={minLength}
+        maxLength={maxLength}
+        required
+      />
+      <button
+        className="password-toggle"
+        type="button"
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+      >
+        {visible ? 'Ocultar' : 'Mostrar'}
+      </button>
+    </div>
+  )
+}
+
+function App() {
+  const [authenticated, setAuthenticated] = useState(
+    () => Boolean(localStorage.getItem('techservice_token')),
+  )
+  const [authView, setAuthView] = useState('login')
+  const [profile, setProfile] = useState(null)
+  const [profileForm, setProfileForm] = useState({
+    nombre: '',
+    email: '',
+  })
+  const [passwordForm, setPasswordForm] = useState(emptyPasswordForm)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(
+    () => Boolean(localStorage.getItem('techservice_token')),
+  )
+  const [orderId, setOrderId] = useState('')
+  const [orderHistory, setOrderHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [activeView, setActiveView] = useState('operaciones')
+
+  useEffect(() => {
+    if (!authenticated) {
+      return undefined
+    }
+
+    async function loadProfile() {
+      try {
+        const usuario = await getMyProfile()
+        setProfile(usuario)
+        setActiveView(usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
+        setProfileForm({
+          nombre: usuario.nombre,
+          email: usuario.email,
+        })
+      } catch (requestError) {
+        setError(requestError.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfile()
+    return undefined
+  }, [authenticated])
+
+  async function handleLogin(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+    setLoading(true)
+
+    const formData = new FormData(event.currentTarget)
+
+    try {
+      const response = await loginUser({
+        email: formData.get('email'),
+        password: formData.get('password'),
+      })
+      localStorage.setItem('techservice_token', response.token)
+      setAuthenticated(true)
+      setProfile(response.usuario)
+      setActiveView(response.usuario.rol === 'ADMIN' || response.usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
+      setProfileForm({
+        nombre: response.usuario.nombre,
+        email: response.usuario.email,
+      })
+    } catch (requestError) {
+      setError(requestError.message)
+      setLoading(false)
+    }
+  }
+
+  async function handleRegister(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    const form = event.currentTarget
+    const formData = new FormData(event.currentTarget)
+    const password = formData.get('register-password')
+    const confirmation = formData.get('register-confirmation')
+
+    if (password !== confirmation) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const response = await registerUser({
+        nombre: formData.get('register-name'),
+        email: formData.get('register-email'),
+        password,
+      })
+      setMessage(response.mensaje)
+      setAuthView('login')
+      form.reset()
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('techservice_token')
+    setAuthenticated(false)
+    setProfile(null)
+    setLoading(false)
+  }
+
+  function handleProfileChange(event) {
+    const { name, value } = event.target
+
+    setProfileForm((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  function handlePasswordChange(event) {
+    const { name, value } = event.target
+
+    setPasswordForm((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  async function handleProfileSubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    try {
+      const usuario = await updateMyProfile(profileForm)
+      setProfile(usuario)
+      setMessage('Datos personales actualizados correctamente.')
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    try {
+      const response = await changeMyPassword(passwordForm)
+      setPasswordForm(emptyPasswordForm)
+      setMessage(response.mensaje)
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  async function handleHistorySubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+    setHistoryLoading(true)
+
+    try {
+      setOrderHistory(await getOrderHistory(orderId))
+    } catch (requestError) {
+      setOrderHistory([])
+      setError(requestError.message)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <main className="page"><p>Cargando perfil...</p></main>
+  }
+
+  if (!authenticated) {
+    return (
+      <main className="page login-page">
+        <header>
+          <p className="eyebrow">TechService</p>
+          <h1>{authView === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
+          <p>
+            {authView === 'login'
+              ? 'Accede para consultar y actualizar tu perfil.'
+              : 'Regístrate para acceder a los servicios de TechService.'}
+          </p>
+        </header>
+
+        {message && <p className="alert success" role="status">{message}</p>}
+        {error && <p className="alert error">{error}</p>}
+
+        <section className="card login-card">
+          {authView === 'login' ? (
+            <form onSubmit={handleLogin}>
+              <label htmlFor="login-email">Correo electrónico</label>
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+              />
+
+              <label htmlFor="login-password">Contraseña</label>
+              <PasswordInput
+                id="login-password"
+                name="password"
+                autoComplete="current-password"
+              />
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Validando...' : 'Iniciar sesión'}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  setAuthView('register')
+                  setError('')
+                  setMessage('')
+                }}
+              >
+                ¿Aún no tienes cuenta? Regístrate
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister}>
+              <label htmlFor="register-name">Nombre completo</label>
+              <input
+                id="register-name"
+                name="register-name"
+                minLength="2"
+                maxLength="100"
+                autoComplete="name"
+                required
+              />
+
+              <label htmlFor="register-email">Correo electrónico</label>
+              <input
+                id="register-email"
+                name="register-email"
+                type="email"
+                maxLength="100"
+                autoComplete="email"
+                required
+              />
+
+              <label htmlFor="register-password">Contraseña</label>
+              <PasswordInput
+                id="register-password"
+                name="register-password"
+                minLength="8"
+                maxLength="72"
+                autoComplete="new-password"
+              />
+
+              <label htmlFor="register-confirmation">Confirmar contraseña</label>
+              <PasswordInput
+                id="register-confirmation"
+                name="register-confirmation"
+                minLength="8"
+                maxLength="72"
+                autoComplete="new-password"
+              />
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  setAuthView('login')
+                  setError('')
+                  setMessage('')
+                }}
+              >
+                Ya tengo una cuenta
+              </button>
+            </form>
+          )}
+        </section>
+      </main>
+    )
+  }
+
+  const isStaff = profile?.rol === 'ADMIN' || profile?.rol === 'TECNICO'
+  const viewLabels = isStaff
+    ? [
+        ['perfil', 'Mi cuenta'],
+      ['clientes', 'Clientes'],
+      ['historial', 'Historial'],
+        ['operaciones', 'Operaciones'],
+        ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+        ['cotizacion', 'Cotizaciones'],
+      ]
+    : [['perfil', 'Mi cuenta']]
+
+  return (
+    <main className="page dashboard-page">
+      <header className="dashboard-header">
+        <p className="eyebrow">TechService</p>
+        <h1>Panel de {profile?.rol === 'ADMIN' ? 'administración' : profile?.rol === 'TECNICO' ? 'servicio técnico' : 'cliente'}</h1>
+        <p className="dashboard-intro">Gestiona tu cuenta y las actividades de servicio autorizadas.</p>
+        <div className="user-chip">
+          <span className="user-avatar" aria-hidden="true">{profile?.nombre?.charAt(0).toUpperCase()}</span>
+          <span><strong>{profile?.nombre}</strong><small>{profile?.email}</small></span>
+        </div>
+      </header>
+
+      <nav className="dashboard-nav" aria-label="Módulos de TechService">
+        <p className="nav-heading">Espacio de trabajo</p>
+        {viewLabels.map(([view, label]) => (
+          <button
+            className={activeView === view ? 'nav-button active' : 'nav-button'}
+            type="button"
+            key={view}
+            onClick={() => {
+              setActiveView(view)
+              setMessage('')
+              setError('')
+            }}
+            aria-current={activeView === view ? 'page' : undefined}
+          >
+            <span className={`nav-icon nav-icon-${view}`} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+        <button className="logout-button" type="button" onClick={handleLogout}>
+          <span className="nav-icon nav-icon-logout" aria-hidden="true" />
+          <span>Cerrar sesión</span>
+        </button>
+      </nav>
+
+      <section className="dashboard-content">
+        <div className="content-heading">
+          <div>
+            <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+          </div>
+          <span className="role-badge">{profile?.rol}</span>
+        </div>
+
+        {message && <p className="alert success">{message}</p>}
+        {error && <p className="alert error">{error}</p>}
+
+        <div className="grid">
+        {activeView === 'perfil' && <>
+        <section className="card">
+          <h2>Datos personales</h2>
+          {profile?.rol && <p className="role">Rol: {profile.rol}</p>}
+
+          <form onSubmit={handleProfileSubmit}>
+            <label htmlFor="nombre">Nombre completo</label>
+            <input
+              id="nombre"
+              name="nombre"
+              value={profileForm.nombre}
+              onChange={handleProfileChange}
+              minLength="2"
+              maxLength="100"
+              required
+            />
+
+            <label htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={profileForm.email}
+              onChange={handleProfileChange}
+              maxLength="100"
+              required
+            />
+
+            <button type="submit">Guardar cambios</button>
+          </form>
+        </section>
+
+        <section className="card">
+          <h2>Cambiar contraseña</h2>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <label htmlFor="contrasenaActual">Contraseña actual</label>
+            <PasswordInput
+              id="contrasenaActual"
+              name="contrasenaActual"
+              value={passwordForm.contrasenaActual}
+              onChange={handlePasswordChange}
+              autoComplete="current-password"
+              required
+            />
+
+            <label htmlFor="nuevaContrasena">Nueva contraseña</label>
+            <PasswordInput
+              id="nuevaContrasena"
+              name="nuevaContrasena"
+              value={passwordForm.nuevaContrasena}
+              onChange={handlePasswordChange}
+              minLength="8"
+              maxLength="72"
+              autoComplete="new-password"
+              required
+            />
+
+            <label htmlFor="confirmacionContrasena">
+              Confirmar nueva contraseña
+            </label>
+            <PasswordInput
+              id="confirmacionContrasena"
+              name="confirmacionContrasena"
+              value={passwordForm.confirmacionContrasena}
+              onChange={handlePasswordChange}
+              minLength="8"
+              maxLength="72"
+              autoComplete="new-password"
+              required
+            />
+
+            <button type="submit">Actualizar contraseña</button>
+          </form>
+        </section>
+        </>}
+
+        {activeView === 'historial' && isStaff && (
+          <section className="card history-card">
+            <h2>Historial de una orden</h2>
+            <p>Consulta los cambios de estado registrados y el usuario responsable.</p>
+
+            <form onSubmit={handleHistorySubmit}>
+              <label htmlFor="order-id">ID o código de orden</label>
+              <input
+                id="order-id"
+                type="text"
+                placeholder="Ej. 2 o OS-2026-0002"
+                value={orderId}
+                onChange={(event) => setOrderId(event.target.value)}
+                required
+              />
+              <button type="submit" disabled={historyLoading}>
+                {historyLoading ? 'Consultando...' : 'Consultar historial'}
+              </button>
+            </form>
+
+            {orderHistory.length > 0 && (
+              <ol className="history-list">
+                {orderHistory.map((entry) => (
+                  <li key={entry.id}>
+                    <strong>
+                      {entry.estadoAnterior ?? 'Sin estado'} → {entry.estadoNuevo}
+                    </strong>
+                    <span>{entry.usuarioNombre} · {new Date(entry.creadoEn).toLocaleString()}</span>
+                    {entry.observacion && <small>{entry.observacion}</small>}
+                  </li>
+                ))}
+              </ol>
+            )}
+            {!historyLoading && orderHistory.length === 0 && orderId && !error && (
+              <p className="empty-state">La orden existe, pero todavía no tiene cambios registrados.</p>
+            )}
+          </section>
+        )}
+        </div>
+
+        {activeView === 'clientes' && isStaff && <ClientsPanel />}
+        {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
+        {activeView === 'cotizacion' && isStaff && <QuotePanel />}
+        {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}
+      </section>
+    </main>
+  )
+}
+
+export default App

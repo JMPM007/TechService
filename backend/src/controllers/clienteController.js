@@ -1,113 +1,60 @@
-import { buscarClientePorCedulaOEmail, crearCliente } from "../models/clienteModel.js"
-import { ClienteModel } from "../models/clienteModel.js"
+import { buscarClientePorCedulaOEmail, crearCliente, listarClientes } from '../models/clienteModel.js'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const TELEFONO_REGEX = /^[0-9]{7,15}$/
 
-export const ClienteController = {
-  async getClientes(req, res) {
-    try {
-      const search = req.query.search || ""
-      const clientes = await ClienteModel.findAll(search)
-      res.json(clientes)
-    } catch (error) {
-      console.error("Error al obtener clientes:", error)
-      res.status(500).json({ error: "Error al listar clientes" })
+export async function consultarClientes(req, res) {
+  try {
+    const search = typeof req.query.search === 'string' ? req.query.search : ''
+    const clientes = await listarClientes(search)
+    return res.json({ success: true, total: clientes.length, clientes })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'No fue posible consultar los clientes' })
+  }
+}
+
+export async function registrarCliente(req, res) {
+  try {
+    const { cedula, nombres, apellidos, telefono, email } = req.body
+    const campos = { cedula, nombres, apellidos, telefono, email }
+    const camposFaltantes = Object.entries(campos)
+      .filter(([, value]) => !value || String(value).trim() === '')
+      .map(([campo]) => campo)
+
+    if (camposFaltantes.length) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios', camposFaltantes })
     }
-  },
-
-  async getClienteById(req, res) {
-    try {
-      const cliente = await ClienteModel.findById(req.params.id)
-      if (!cliente) return res.status(404).json({ error: "Cliente no encontrado" })
-      res.json(cliente)
-    } catch (error) {
-      console.error("Error al obtener cliente:", error)
-      res.status(500).json({ error: "Error al consultar cliente" })
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: 'El correo electrónico no tiene un formato válido' })
     }
-  },
-
-  async getClienteByCedula(req, res) {
-    try {
-      const { cedula } = req.params
-
-      if (!cedula || String(cedula).trim() === "") {
-        return res.status(400).json({ error: "Cédula requerida" })
-      }
-
-      const cliente = await buscarClientePorCedulaOEmail(cedula.trim(), "")
-      if (!cliente) {
-        return res.status(404).json({ error: "No se encontró ningún cliente con esa cédula" })
-      }
-      return res.json(cliente)
-    } catch (error) {
-      console.error("Error al buscar cliente por cédula:", error)
-      res.status(500).json({ error: error.message })
+    if (!TELEFONO_REGEX.test(telefono)) {
+      return res.status(400).json({ error: 'El teléfono no tiene un formato válido' })
     }
-  },
 
-  async createCliente(req, res) {
-    try {
-      const { cedula, nombres, apellidos, direccion, telefono, email } = req.body ?? {}
-
-      const camposObligatorios = { cedula, nombres, apellidos, telefono, email }
-      const camposFaltantes = Object.entries(camposObligatorios)
-          .filter(([, valor]) => !valor || String(valor).trim() === "")
-          .map(([campo]) => campo)
-
-      if (camposFaltantes.length > 0) {
-          return res.status(400).json({ error: "Faltan campos obligatorios", camposFaltantes })
-      }
-
-      if (!EMAIL_REGEX.test(email)) {
-          return res.status(400).json({ error: "El correo electrónico no tiene un formato válido" })
-      }
-      if (!TELEFONO_REGEX.test(telefono)) {
-          return res.status(400).json({ error: "El teléfono no tiene un formato válido (7-15 dígitos)" })
-      }
-
-      const existing = await buscarClientePorCedulaOEmail(cedula, email)
-      if (existing) {
-          return res.status(409).json({ error: "Ya existe un cliente registrado con esa cédula o correo" })
-      }
-
-      const nuevo = await crearCliente({ cedula, nombres, apellidos, direccion, telefono, email })
-      res.status(201).json({ mensaje: "Cliente registrado exitosamente", cliente: nuevo })
-    } catch (error) {
-      console.error("Error al registrar cliente:", error)
-      res.status(500).json({ error: error.message })
+    const existente = await buscarClientePorCedulaOEmail(cedula, email)
+    if (existente) {
+      return res.status(409).json({ error: 'Ya existe un cliente registrado con esa cédula o correo' })
     }
-  },
 
-  async updateCliente(req, res) {
-    try {
-      const id = parseInt(req.params.id, 10)
-      const { nombres, apellidos, direccion, telefono, email } = req.body ?? {}
+    const cliente = await crearCliente({ cedula, nombres, apellidos, telefono, email })
+    return res.status(201).json({ mensaje: 'Cliente registrado exitosamente', cliente })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'No fue posible registrar el cliente' })
+  }
+}
 
-      if (!nombres || !apellidos || !telefono) {
-        return res.status(400).json({ error: "Nombres, apellidos y teléfono son obligatorios." })
-      }
+export async function buscarClientePorCedula(req, res) {
+  try {
+    const cedula = req.params.cedula?.trim()
+    if (!cedula) return res.status(400).json({ error: 'Cédula requerida' })
 
-      const existing = await ClienteModel.findById(id)
-      if (!existing) {
-        return res.status(404).json({ error: "Cliente no encontrado." })
-      }
-
-      const updated = await ClienteModel.update(id, { nombres, apellidos, direccion, telefono, email })
-      res.json(updated)
-    } catch (error) {
-      console.error("Error al actualizar cliente:", error)
-      res.status(500).json({ error: "Error al actualizar cliente." })
-    }
-  },
-
-  async getTecnicos(req, res) {
-    try {
-      const tecnicos = await ClienteModel.findTecnicos()
-      res.json({ success: true, tecnicos })
-    } catch (error) {
-      console.error("Error al obtener técnicos:", error)
-      res.status(500).json({ success: false, error: "Error al listar técnicos" })
-    }
+    const cliente = await buscarClientePorCedulaOEmail(cedula, '')
+    if (!cliente) return res.status(404).json({ error: 'No se encontró ningún cliente con esa cédula' })
+    return res.json(cliente)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'No fue posible buscar el cliente' })
   }
 }

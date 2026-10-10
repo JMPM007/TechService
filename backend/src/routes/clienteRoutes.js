@@ -1,17 +1,11 @@
-import { Router } from "express"
-// Importamos el controlador unificado de clientes
-import { ClienteController } from "../controllers/clienteController.js"
-// Importamos los middlewares de seguridad del proyecto
-import { authorizeRoles, verifyToken } from "../../middleware/authMiddleware.js"
+import { Router } from 'express'
+import { buscarClientePorCedula, consultarClientes, registrarCliente } from '../controllers/clienteController.js'
+import { authorizeRoles, verifyToken } from '../middlewares/authMiddleware.js'
 
 const router = Router()
 
-
-router.post("/", ClienteController.createCliente)
-router.get("/", verifyToken, authorizeRoles("ADMIN", "TECNICO"), ClienteController.getClientes)
-router.get("/tecnicos", verifyToken, authorizeRoles("ADMIN", "TECNICO"), ClienteController.getTecnicos)
-router.get("/cedula/:cedula", verifyToken, authorizeRoles("ADMIN", "TECNICO"), ClienteController.getClienteByCedula)
-router.get("/:id", verifyToken, authorizeRoles("ADMIN", "TECNICO", "CLIENTE"), ClienteController.getClienteById)
-router.put("/:id", verifyToken, authorizeRoles("ADMIN", "TECNICO"), ClienteController.updateCliente)
+router.post('/clientes', registrarCliente)
+router.get('/clientes', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), consultarClientes)
+router.get('/clientes/cedula/:cedula', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), buscarClientePorCedula)
 
 export default router
