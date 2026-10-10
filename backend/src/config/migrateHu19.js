@@ -1,42 +1,26 @@
-import pool from './db.js'
+import dotenv from 'dotenv'
+import mysql from 'mysql2/promise'
+import process from 'node:process'
+
+dotenv.config()
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT),
+  ssl: { rejectUnauthorized: false },
+})
 
 try {
-  async function addHistoryColumnIfMissing(columnName, definition) {
-    const [rows] = await pool.query(
-      `SELECT COUNT(*) AS count FROM information_schema.columns
-       WHERE table_schema = DATABASE()
-         AND table_name = 'historial_estados_orden'
-         AND column_name = ?`,
-      [columnName],
-    )
-    if (rows[0].count === 0) {
-      await pool.query(`ALTER TABLE historial_estados_orden ADD COLUMN ${columnName} ${definition}`)
-    }
-  }
-
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ordenes_servicio (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      codigo_orden VARCHAR(30) NULL UNIQUE,
-      equipo_id INT NOT NULL,
-      tecnico_id INT NULL,
-      motivo_ingreso TEXT NULL,
-      tipo_servicio VARCHAR(80) NULL,
-      prioridad ENUM('BAJA', 'MEDIA', 'ALTA', 'URGENTE') NOT NULL DEFAULT 'MEDIA',
-      estado ENUM('RECIBIDA', 'PENDIENTE', 'EN_REVISION', 'EN_REPARACION',
-        'EN_PROCESO', 'EN_ESPERA_REPUESTO', 'REPARADA', 'COMPLETADO',
-        'ENTREGADA', 'CERRADA', 'CANCELADA') NOT NULL DEFAULT 'RECIBIDA',
-      costo_estimado DECIMAL(12, 2) NOT NULL DEFAULT 0,
-      abono_inicial DECIMAL(12, 2) NOT NULL DEFAULT 0,
-      observaciones_recepcion TEXT NULL,
-      observaciones_cierre TEXT NULL,
-      fecha_asignacion TIMESTAMP NULL,
-      fecha_cierre TIMESTAMP NULL,
+      equipo_id INT NOT NULL UNIQUE,
+      estado ENUM('RECIBIDA', 'EN_REVISION', 'EN_REPARACION', 'REPARADA', 'ENTREGADA', 'CANCELADA') NOT NULL DEFAULT 'RECIBIDA',
       creada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_ordenes_equipo_id (equipo_id),
-      FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE RESTRICT,
-      FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id) ON DELETE SET NULL
+      FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE RESTRICT
     )
   `)
 
@@ -49,23 +33,11 @@ try {
       usuario_id INT NOT NULL,
       observacion TEXT NULL,
       creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE CASCADE,
+      FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
       INDEX idx_historial_orden_fecha (orden_id, creado_en, id)
     )
   `)
-
-  await addHistoryColumnIfMissing('usuario_id', 'INT NULL')
-  await addHistoryColumnIfMissing('observacion', 'TEXT NULL')
-  await addHistoryColumnIfMissing('creado_en', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
-
-  const [users] = await pool.query('SELECT MIN(id) AS id FROM usuarios')
-  if (users[0].id !== null) {
-    await pool.query(
-      'UPDATE historial_estados_orden SET usuario_id = ? WHERE usuario_id IS NULL',
-      [users[0].id],
-    )
-  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS diagnosticos_orden (
@@ -88,10 +60,9 @@ try {
   await pool.query(`
     INSERT INTO historial_estados_orden
       (orden_id, estado_anterior, estado_nuevo, usuario_id, observacion)
-    SELECT o.id, NULL, o.estado, u.id, 'Registro inicial de la orden'
+    SELECT o.id, NULL, o.estado, 1, 'Registro inicial de la orden'
     FROM ordenes_servicio o
     LEFT JOIN historial_estados_orden h ON h.orden_id = o.id
-    JOIN (SELECT MIN(id) AS id FROM usuarios) u ON u.id IS NOT NULL
     WHERE h.id IS NULL
   `)
 

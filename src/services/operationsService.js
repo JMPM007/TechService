@@ -49,13 +49,6 @@ export function updateOrderStatus(orderId, estado, observacion = '') {
   })
 }
 
-export function closeServiceOrder(orderId, observaciones) {
-  return apiRequest(`/ordenes/${orderId}/cerrar`, {
-    method: 'PATCH',
-    body: JSON.stringify({ observaciones }),
-  })
-}
-
 export function assignOrderToTechnician(orderId, tecnicoId) {
   return apiRequest(`/ordenes/${orderId}/asignar`, {
     method: 'PATCH',

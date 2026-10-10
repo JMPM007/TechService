@@ -1,219 +1,526 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  BrowserRouter,
-  Link,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
-} from 'react-router-dom'
-import { ClientDashboard } from './Pages/ClientDashboard.jsx'
-import { Login } from './Pages/Login.jsx'
-import { Register } from './Pages/Register.jsx'
-import { RegisterTechnician } from './Pages/RegisterTechnician.jsx'
-import { TechDashboard } from './Pages/TechDashboard.jsx'
-import { TechnicianList } from './Pages/TechnicianList.jsx'
-import DiagnosisPanel from './components/DiagnosisPanel.jsx'
-import DirectorioClientes from './components/DirectorioClientes.jsx'
-import OperationsPanel from './components/OperationsPanel.jsx'
-import ProfilePanel from './components/ProfilePanel.jsx'
-import QuotePanel from './components/QuotePanel.jsx'
-import RegistrarEquipo from './components/RegistrarEquipo.jsx'
-import { getOrderHistory } from './services/orderService.js'
+  changeMyPassword,
+  getMyProfile,
+  loginUser,
+  registerUser,
+  updateMyProfile,
+} from './services/profileService'
+import { getOrderHistory } from './services/orderService'
+import DiagnosisPanel from './components/DiagnosisPanel'
+import QuotePanel from './components/QuotePanel'
+import OperationsPanel from './components/OperationsPanel'
+import ClientsPanel from './components/ClientsPanel'
 import './App.css'
 
-function ProtectedRoute({ children, allowedRoles }) {
-  const token = localStorage.getItem('techservice_token') || localStorage.getItem('token')
-  const rol = localStorage.getItem('rol')
-
-  if (!token) return <Navigate to="/login" replace />
-  if (allowedRoles && !allowedRoles.includes(rol)) return <Navigate to="/login" replace />
-  return children || <Outlet />
+const emptyPasswordForm = {
+  contrasenaActual: '',
+  nuevaContrasena: '',
+  confirmacionContrasena: '',
 }
 
-function useLogout() {
-  const navigate = useNavigate()
-  return () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('techservice_token')
-    localStorage.removeItem('rol')
-    navigate('/login')
-  }
-}
-
-function SidebarLayout({ title, links }) {
-  const location = useLocation()
-  const logout = useLogout()
+function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
+  const [visible, setVisible] = useState(false)
 
   return (
-    <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="sidebar-brand">{title}</div>
-        <nav className="sidebar-nav">
-          {links.map(([path, label]) => (
-            <Link
-              key={path}
-              to={path}
-              className={`nav-link ${location.pathname === path ? 'active' : ''}`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <button onClick={logout} className="btn-logout" type="button">Cerrar Sesión</button>
-      </aside>
-      <main className="admin-content"><Outlet /></main>
+    <div className="password-field">
+      <input
+        id={id}
+        name={name}
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        autoComplete={autoComplete}
+        minLength={minLength}
+        maxLength={maxLength}
+        required
+      />
+      <button
+        className="password-toggle"
+        type="button"
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+      >
+        {visible ? 'Ocultar' : 'Mostrar'}
+      </button>
     </div>
   )
 }
 
-const adminLinks = [
-  ['/admin-panel', 'Inicio'],
-  ['/admin-panel/tecnicos', 'Registrar Técnico'],
-  ['/admin-panel/clientes', 'Directorio de Clientes'],
-  ['/admin-panel/recepcion', 'Recepción de Equipos'],
-  ['/admin-panel/ordenes', 'Operaciones y órdenes'],
-  ['/admin-panel/historial', 'Historial de órdenes'],
-  ['/admin-panel/cotizaciones', 'Cotizaciones'],
-  ['/admin-panel/perfil', 'Mi cuenta'],
-]
-
-const technicianLinks = [
-  ['/tecnico-panel', 'Inicio'],
-  ['/tecnico-panel/clientes', 'Directorio de Clientes'],
-  ['/tecnico-panel/recepcion', 'Recepción de Equipos'],
-  ['/tecnico-panel/ordenes', 'Operaciones y órdenes'],
-  ['/tecnico-panel/historial', 'Historial de órdenes'],
-  ['/tecnico-panel/diagnostico', 'Diagnóstico'],
-  ['/tecnico-panel/cotizaciones', 'Cotizaciones'],
-  ['/tecnico-panel/perfil', 'Mi cuenta'],
-]
-
-function AdminLayout() {
-  return <SidebarLayout title="TechService Admin" links={adminLinks} />
-}
-
-function TechLayout() {
-  return <SidebarLayout title="TechService Técnico" links={technicianLinks} />
-}
-
-function ClientLayout() {
-  return (
-    <SidebarLayout
-      title="TechService Cliente"
-      links={[
-        ['/cliente-panel', 'Inicio'],
-        ['/cliente-panel/perfil', 'Mi cuenta'],
-      ]}
-    />
+function App() {
+  const [authenticated, setAuthenticated] = useState(
+    () => Boolean(localStorage.getItem('techservice_token')),
   )
-}
-
-function OrderHistoryPanel() {
-  const [reference, setReference] = useState('')
-  const [history, setHistory] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [authView, setAuthView] = useState('login')
+  const [profile, setProfile] = useState(null)
+  const [profileForm, setProfileForm] = useState({
+    nombre: '',
+    email: '',
+  })
+  const [passwordForm, setPasswordForm] = useState(emptyPasswordForm)
+  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(
+    () => Boolean(localStorage.getItem('techservice_token')),
+  )
+  const [orderId, setOrderId] = useState('')
+  const [orderHistory, setOrderHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [activeView, setActiveView] = useState('operaciones')
 
-  async function loadHistory(event) {
+  useEffect(() => {
+    if (!authenticated) {
+      return undefined
+    }
+
+    async function loadProfile() {
+      try {
+        const usuario = await getMyProfile()
+        setProfile(usuario)
+        setActiveView(usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
+        setProfileForm({
+          nombre: usuario.nombre,
+          email: usuario.email,
+        })
+      } catch (requestError) {
+        setError(requestError.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfile()
+    return undefined
+  }, [authenticated])
+
+  async function handleLogin(event) {
     event.preventDefault()
+    setMessage('')
     setError('')
     setLoading(true)
+
+    const formData = new FormData(event.currentTarget)
+
     try {
-      setHistory(await getOrderHistory(reference.trim()))
+      const response = await loginUser({
+        email: formData.get('email'),
+        password: formData.get('password'),
+      })
+      localStorage.setItem('techservice_token', response.token)
+      setAuthenticated(true)
+      setProfile(response.usuario)
+      setActiveView(response.usuario.rol === 'ADMIN' || response.usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
+      setProfileForm({
+        nombre: response.usuario.nombre,
+        email: response.usuario.email,
+      })
     } catch (requestError) {
-      setHistory([])
+      setError(requestError.message)
+      setLoading(false)
+    }
+  }
+
+  async function handleRegister(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    const form = event.currentTarget
+    const formData = new FormData(event.currentTarget)
+    const password = formData.get('register-password')
+    const confirmation = formData.get('register-confirmation')
+
+    if (password !== confirmation) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const response = await registerUser({
+        nombre: formData.get('register-name'),
+        email: formData.get('register-email'),
+        password,
+      })
+      setMessage(response.mensaje)
+      setAuthView('login')
+      form.reset()
+    } catch (requestError) {
       setError(requestError.message)
     } finally {
       setLoading(false)
     }
   }
 
+  function handleLogout() {
+    localStorage.removeItem('techservice_token')
+    setAuthenticated(false)
+    setProfile(null)
+    setLoading(false)
+  }
+
+  function handleProfileChange(event) {
+    const { name, value } = event.target
+
+    setProfileForm((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  function handlePasswordChange(event) {
+    const { name, value } = event.target
+
+    setPasswordForm((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  async function handleProfileSubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    try {
+      const usuario = await updateMyProfile(profileForm)
+      setProfile(usuario)
+      setMessage('Datos personales actualizados correctamente.')
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    try {
+      const response = await changeMyPassword(passwordForm)
+      setPasswordForm(emptyPasswordForm)
+      setMessage(response.mensaje)
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  async function handleHistorySubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+    setHistoryLoading(true)
+
+    try {
+      setOrderHistory(await getOrderHistory(orderId))
+    } catch (requestError) {
+      setOrderHistory([])
+      setError(requestError.message)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <main className="page"><p>Cargando perfil...</p></main>
+  }
+
+  if (!authenticated) {
+    return (
+      <main className="page login-page">
+        <header>
+          <p className="eyebrow">TechService</p>
+          <h1>{authView === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
+          <p>
+            {authView === 'login'
+              ? 'Accede para consultar y actualizar tu perfil.'
+              : 'Regístrate para acceder a los servicios de TechService.'}
+          </p>
+        </header>
+
+        {message && <p className="alert success" role="status">{message}</p>}
+        {error && <p className="alert error">{error}</p>}
+
+        <section className="card login-card">
+          {authView === 'login' ? (
+            <form onSubmit={handleLogin}>
+              <label htmlFor="login-email">Correo electrónico</label>
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+              />
+
+              <label htmlFor="login-password">Contraseña</label>
+              <PasswordInput
+                id="login-password"
+                name="password"
+                autoComplete="current-password"
+              />
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Validando...' : 'Iniciar sesión'}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  setAuthView('register')
+                  setError('')
+                  setMessage('')
+                }}
+              >
+                ¿Aún no tienes cuenta? Regístrate
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister}>
+              <label htmlFor="register-name">Nombre completo</label>
+              <input
+                id="register-name"
+                name="register-name"
+                minLength="2"
+                maxLength="100"
+                autoComplete="name"
+                required
+              />
+
+              <label htmlFor="register-email">Correo electrónico</label>
+              <input
+                id="register-email"
+                name="register-email"
+                type="email"
+                maxLength="100"
+                autoComplete="email"
+                required
+              />
+
+              <label htmlFor="register-password">Contraseña</label>
+              <PasswordInput
+                id="register-password"
+                name="register-password"
+                minLength="8"
+                maxLength="72"
+                autoComplete="new-password"
+              />
+
+              <label htmlFor="register-confirmation">Confirmar contraseña</label>
+              <PasswordInput
+                id="register-confirmation"
+                name="register-confirmation"
+                minLength="8"
+                maxLength="72"
+                autoComplete="new-password"
+              />
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  setAuthView('login')
+                  setError('')
+                  setMessage('')
+                }}
+              >
+                Ya tengo una cuenta
+              </button>
+            </form>
+          )}
+        </section>
+      </main>
+    )
+  }
+
+  const isStaff = profile?.rol === 'ADMIN' || profile?.rol === 'TECNICO'
+  const viewLabels = isStaff
+    ? [
+        ['perfil', 'Mi cuenta'],
+      ['clientes', 'Clientes'],
+      ['historial', 'Historial'],
+        ['operaciones', 'Operaciones'],
+        ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+        ['cotizacion', 'Cotizaciones'],
+      ]
+    : [['perfil', 'Mi cuenta']]
+
   return (
-    <section className="card history-card">
-      <h2>Historial de una orden</h2>
-      <p>Consulta los cambios de estado por ID o código de orden.</p>
-      <form onSubmit={loadHistory}>
-        <label htmlFor="order-history-reference">ID o código de orden</label>
-        <input
-          id="order-history-reference"
-          value={reference}
-          onChange={(event) => setReference(event.target.value)}
-          placeholder="Ej. 2 o OS-2026-0002"
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Consultando...' : 'Consultar historial'}
+    <main className="page dashboard-page">
+      <header className="dashboard-header">
+        <p className="eyebrow">TechService</p>
+        <h1>Panel de {profile?.rol === 'ADMIN' ? 'administración' : profile?.rol === 'TECNICO' ? 'servicio técnico' : 'cliente'}</h1>
+        <p className="dashboard-intro">Gestiona tu cuenta y las actividades de servicio autorizadas.</p>
+        <div className="user-chip">
+          <span className="user-avatar" aria-hidden="true">{profile?.nombre?.charAt(0).toUpperCase()}</span>
+          <span><strong>{profile?.nombre}</strong><small>{profile?.email}</small></span>
+        </div>
+      </header>
+
+      <nav className="dashboard-nav" aria-label="Módulos de TechService">
+        <p className="nav-heading">Espacio de trabajo</p>
+        {viewLabels.map(([view, label]) => (
+          <button
+            className={activeView === view ? 'nav-button active' : 'nav-button'}
+            type="button"
+            key={view}
+            onClick={() => {
+              setActiveView(view)
+              setMessage('')
+              setError('')
+            }}
+            aria-current={activeView === view ? 'page' : undefined}
+          >
+            <span className={`nav-icon nav-icon-${view}`} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+        <button className="logout-button" type="button" onClick={handleLogout}>
+          <span className="nav-icon nav-icon-logout" aria-hidden="true" />
+          <span>Cerrar sesión</span>
         </button>
-      </form>
-      {error && <p className="alert error" role="alert">{error}</p>}
-      {history.length > 0 && (
-        <ol className="history-list">
-          {history.map((entry) => (
-            <li key={entry.id}>
-              <strong>{entry.estadoAnterior ?? 'Sin estado'} → {entry.estadoNuevo}</strong>
-              <span>{entry.usuarioNombre} · {new Date(entry.creadoEn).toLocaleString()}</span>
-              {entry.observacion && <small>{entry.observacion}</small>}
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
-  )
-}
+      </nav>
 
-function OrdersWorkspace() {
-  const role = localStorage.getItem('rol')
-  return <OperationsPanel profile={{ rol: role }} />
-}
+      <section className="dashboard-content">
+        <div className="content-heading">
+          <div>
+            <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+          </div>
+          <span className="role-badge">{profile?.rol}</span>
+        </div>
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {message && <p className="alert success">{message}</p>}
+        {error && <p className="alert error">{error}</p>}
 
-        <Route
-          path="/admin-panel"
-          element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}
-        >
-          <Route index element={<TechnicianList />} />
-          <Route path="tecnicos" element={<RegisterTechnician />} />
-          <Route path="clientes" element={<DirectorioClientes />} />
-          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
-          <Route path="ordenes" element={<OrdersWorkspace />} />
-          <Route path="historial" element={<OrderHistoryPanel />} />
-          <Route path="cotizaciones" element={<QuotePanel />} />
-          <Route path="perfil" element={<ProfilePanel />} />
-        </Route>
+        <div className="grid">
+        {activeView === 'perfil' && <>
+        <section className="card">
+          <h2>Datos personales</h2>
+          {profile?.rol && <p className="role">Rol: {profile.rol}</p>}
 
-        <Route
-          path="/tecnico-panel"
-          element={<ProtectedRoute allowedRoles={['TECNICO']}><TechLayout /></ProtectedRoute>}
-        >
-          <Route index element={<TechDashboard />} />
-          <Route path="clientes" element={<DirectorioClientes />} />
-          <Route path="recepcion" element={<RegistrarEquipo onEquipoRegistrado={() => {}} onIrAFicha={() => {}} />} />
-          <Route path="ordenes" element={<OrdersWorkspace />} />
-          <Route path="historial" element={<OrderHistoryPanel />} />
-          <Route path="diagnostico" element={<DiagnosisPanel />} />
-          <Route path="cotizaciones" element={<QuotePanel />} />
-          <Route path="perfil" element={<ProfilePanel />} />
-        </Route>
+          <form onSubmit={handleProfileSubmit}>
+            <label htmlFor="nombre">Nombre completo</label>
+            <input
+              id="nombre"
+              name="nombre"
+              value={profileForm.nombre}
+              onChange={handleProfileChange}
+              minLength="2"
+              maxLength="100"
+              required
+            />
 
-        <Route
-          path="/cliente-panel"
-          element={<ProtectedRoute allowedRoles={['CLIENTE']}><ClientLayout /></ProtectedRoute>}
-        >
-          <Route index element={<ClientDashboard />} />
-          <Route path="perfil" element={<ProfilePanel />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+            <label htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={profileForm.email}
+              onChange={handleProfileChange}
+              maxLength="100"
+              required
+            />
+
+            <button type="submit">Guardar cambios</button>
+          </form>
+        </section>
+
+        <section className="card">
+          <h2>Cambiar contraseña</h2>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <label htmlFor="contrasenaActual">Contraseña actual</label>
+            <PasswordInput
+              id="contrasenaActual"
+              name="contrasenaActual"
+              value={passwordForm.contrasenaActual}
+              onChange={handlePasswordChange}
+              autoComplete="current-password"
+              required
+            />
+
+            <label htmlFor="nuevaContrasena">Nueva contraseña</label>
+            <PasswordInput
+              id="nuevaContrasena"
+              name="nuevaContrasena"
+              value={passwordForm.nuevaContrasena}
+              onChange={handlePasswordChange}
+              minLength="8"
+              maxLength="72"
+              autoComplete="new-password"
+              required
+            />
+
+            <label htmlFor="confirmacionContrasena">
+              Confirmar nueva contraseña
+            </label>
+            <PasswordInput
+              id="confirmacionContrasena"
+              name="confirmacionContrasena"
+              value={passwordForm.confirmacionContrasena}
+              onChange={handlePasswordChange}
+              minLength="8"
+              maxLength="72"
+              autoComplete="new-password"
+              required
+            />
+
+            <button type="submit">Actualizar contraseña</button>
+          </form>
+        </section>
+        </>}
+
+        {activeView === 'historial' && isStaff && (
+          <section className="card history-card">
+            <h2>Historial de una orden</h2>
+            <p>Consulta los cambios de estado registrados y el usuario responsable.</p>
+
+            <form onSubmit={handleHistorySubmit}>
+              <label htmlFor="order-id">ID o código de orden</label>
+              <input
+                id="order-id"
+                type="text"
+                placeholder="Ej. 2 o OS-2026-0002"
+                value={orderId}
+                onChange={(event) => setOrderId(event.target.value)}
+                required
+              />
+              <button type="submit" disabled={historyLoading}>
+                {historyLoading ? 'Consultando...' : 'Consultar historial'}
+              </button>
+            </form>
+
+            {orderHistory.length > 0 && (
+              <ol className="history-list">
+                {orderHistory.map((entry) => (
+                  <li key={entry.id}>
+                    <strong>
+                      {entry.estadoAnterior ?? 'Sin estado'} → {entry.estadoNuevo}
+                    </strong>
+                    <span>{entry.usuarioNombre} · {new Date(entry.creadoEn).toLocaleString()}</span>
+                    {entry.observacion && <small>{entry.observacion}</small>}
+                  </li>
+                ))}
+              </ol>
+            )}
+            {!historyLoading && orderHistory.length === 0 && orderId && !error && (
+              <p className="empty-state">La orden existe, pero todavía no tiene cambios registrados.</p>
+            )}
+          </section>
+        )}
+        </div>
+
+        {activeView === 'clientes' && isStaff && <ClientsPanel />}
+        {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
+        {activeView === 'cotizacion' && isStaff && <QuotePanel />}
+        {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}
+      </section>
+    </main>
   )
 }
 

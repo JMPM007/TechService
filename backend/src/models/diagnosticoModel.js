@@ -1,4 +1,5 @@
 import pool from '../config/db.js'
+import { codigoOrdenParaId } from './ordenServicioModel.js'
 
 export async function buscarTecnicoPorUsuario(usuarioId) {
   const [rows] = await pool.query(
@@ -61,15 +62,13 @@ export async function crearOrdenYDiagnostico({
   try {
     await connection.beginTransaction()
     const [ordenResult] = await connection.query(
-      `INSERT INTO ordenes_servicio (equipo_id, estado)
-       VALUES (?, 'RECIBIDA')`,
+      'INSERT INTO ordenes_servicio (equipo_id) VALUES (?)',
       [equipoId],
     )
     const ordenId = ordenResult.insertId
-    const codigoOrden = `OS-${new Date().getFullYear()}-${String(ordenId).padStart(4, '0')}`
     await connection.query(
       'UPDATE ordenes_servicio SET codigo_orden = ? WHERE id = ?',
-      [codigoOrden, ordenId],
+      [codigoOrdenParaId(ordenId), ordenId],
     )
     await connection.query(
       `INSERT INTO historial_estados_orden

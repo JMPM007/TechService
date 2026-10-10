@@ -12,12 +12,9 @@ dist
 dist-ssr
 *.local
 
-ca.pem
-
 .env
 *.env
 *.local
-backend/.env
 
 # Editor directories and files
 .vscode/*

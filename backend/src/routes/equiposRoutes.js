@@ -1,16 +1,23 @@
 import { Router } from 'express'
-import { EquipoController } from '../controllers/equiposController.js'
+import {
+	buscarEquipoPorMarcaYSerial,
+	buscarEquipoPorSerialExacto,
+	editarFichaEquipo,
+	listarFichaEquipos,
+	obtenerEquipo,
+	registrarEquipo,
+	obtenerEquiposCliente,
+} from '../controllers/equiposController.js'
 import { authorizeRoles, verifyToken } from '../middlewares/authMiddleware.js'
 
 const router = Router()
-const personalAutorizado = authorizeRoles('ADMIN', 'TECNICO')
 
-router.post('/', verifyToken, personalAutorizado, EquipoController.registrarEquipo)
-router.get('/', verifyToken, personalAutorizado, EquipoController.listarFichaEquipos)
-router.get('/buscar', verifyToken, personalAutorizado, EquipoController.buscarEquipoPorMarcaYSerial)
-router.get('/serie/:serie', verifyToken, personalAutorizado, EquipoController.buscarEquipoPorSerialExacto)
-router.get('/cliente/:clienteId', verifyToken, authorizeRoles('ADMIN', 'TECNICO', 'CLIENTE'), EquipoController.obtenerEquiposCliente)
-router.put('/:equipoId', verifyToken, personalAutorizado, EquipoController.editarFichaEquipo)
-router.get('/:equipoId', verifyToken, personalAutorizado, EquipoController.obtenerEquipo)
+router.post('/', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), registrarEquipo)
+router.get('/', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), listarFichaEquipos)
+router.get('/cliente/:clienteId', verifyToken, authorizeRoles('ADMIN', 'TECNICO', 'CLIENTE'), obtenerEquiposCliente)
+router.get('/buscar', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), buscarEquipoPorMarcaYSerial)
+router.get('/serie/:serie', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), buscarEquipoPorSerialExacto)
+router.put('/:equipoId', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), editarFichaEquipo)
+router.get('/:equipoId', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), obtenerEquipo)
 
 export default router

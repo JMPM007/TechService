@@ -5,7 +5,8 @@ export async function findUserByEmail(email) {
     'SELECT id, nombre, email, password, rol FROM usuarios WHERE email = ?',
     [email],
   )
-  return rows[0] || null
+
+  return rows[0]
 }
 
 export async function createUser({ nombre, email, password, rol }) {
@@ -13,5 +14,6 @@ export async function createUser({ nombre, email, password, rol }) {
     'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)',
     [nombre, email, password, rol],
   )
+
   return result.insertId
 }

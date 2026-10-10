@@ -1,76 +1,40 @@
 import pool from '../config/db.js'
 
-export async function crearEquipo({
-  cliente_id,
-  tipo,
-  marca,
-  modelo,
-  numero_serie,
-  motivo_ingreso,
-  procesador,
-  memoria_ram,
-  almacenamiento,
-  tarjeta_grafica,
-  sistema_operativo,
-  estado_fisico,
-  accesorios,
-  observaciones,
-}) {
+export async function crearEquipo({ cliente_id, tipo, marca, modelo, numero_serie, motivo_ingreso }) {
   const [result] = await pool.query(
-    `INSERT INTO equipos
-      (cliente_id, tipo, marca, modelo, numero_serie, motivo_ingreso,
-       procesador, memoria_ram, almacenamiento, tarjeta_grafica, sistema_operativo,
-       estado_fisico, accesorios, observaciones)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      cliente_id,
-      tipo,
-      marca || null,
-      modelo,
-      numero_serie || null,
-      motivo_ingreso || null,
-      procesador || null,
-      memoria_ram || null,
-      almacenamiento || null,
-      tarjeta_grafica || null,
-      sistema_operativo || null,
-      estado_fisico || null,
-      accesorios || null,
-      observaciones || null,
-    ],
+    'INSERT INTO equipos (cliente_id, tipo, marca, modelo, numero_serie, motivo_ingreso) VALUES (?, ?, ?, ?, ?, ?)',
+    [cliente_id, tipo, marca || null, modelo, numero_serie || null, motivo_ingreso],
   )
   return result.insertId
 }
 
-export async function obtenerEquiposPorCliente(clienteId) {
+export async function obtenerEquiposPorCliente(cliente_id) {
   const [rows] = await pool.query(
     'SELECT * FROM equipos WHERE cliente_id = ? ORDER BY fecha_ingreso DESC',
-    [clienteId],
+    [cliente_id],
   )
   return rows
 }
 
-export async function obtenerEquipoPorId(equipoId) {
+export async function obtenerEquipoPorId(equipo_id) {
   const [rows] = await pool.query(
     `SELECT e.*, e.numero_serie AS numeroSerie, e.cliente_id AS clienteId,
-      c.nombres, c.apellidos, c.cedula,
-      c.telefono AS clienteTelefono, c.email AS clienteEmail
-     FROM equipos e
+      c.nombres, c.apellidos, c.cedula, c.telefono AS clienteTelefono, c.email AS clienteEmail
+    FROM equipos e
      LEFT JOIN clientes c ON c.id = e.cliente_id
      WHERE e.id = ?
      LIMIT 1`,
-    [equipoId],
+    [equipo_id],
   )
   return rows[0] || null
 }
 
 export async function listarEquipos({ search = '' } = {}) {
-  const term = typeof search === 'string' ? search.trim() : ''
+  const term = search.trim()
   const params = []
   let query = `SELECT e.*, e.numero_serie AS numeroSerie,
     e.cliente_id AS clienteId, c.nombres, c.apellidos
-    FROM equipos e
-    LEFT JOIN clientes c ON c.id = e.cliente_id`
+    FROM equipos e LEFT JOIN clientes c ON c.id = e.cliente_id`
 
   if (term) {
     query += ` WHERE e.numero_serie LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ?
@@ -87,10 +51,8 @@ export async function buscarEquipoPorSerial(numeroSerie) {
   const [rows] = await pool.query(
     `SELECT e.*, e.numero_serie AS numeroSerie, e.cliente_id AS clienteId,
       c.nombres, c.apellidos, c.cedula
-     FROM equipos e
-     LEFT JOIN clientes c ON c.id = e.cliente_id
-     WHERE LOWER(TRIM(e.numero_serie)) = LOWER(TRIM(?))
-     LIMIT 1`,
+     FROM equipos e LEFT JOIN clientes c ON c.id = e.cliente_id
+     WHERE LOWER(TRIM(e.numero_serie)) = LOWER(TRIM(?)) LIMIT 1`,
     [numeroSerie],
   )
   return rows[0] || null
@@ -104,9 +66,9 @@ export async function actualizarEquipo(equipoId, datos) {
      WHERE id = ?`,
     [
       datos.tipo,
-      datos.marca || null,
+      datos.marca,
       datos.modelo,
-      datos.numeroSerie || null,
+      datos.numeroSerie,
       datos.procesador || null,
       datos.memoriaRam || null,
       datos.almacenamiento || null,

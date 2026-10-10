@@ -1,4 +1,17 @@
-import pool from './db.js'
+import dotenv from 'dotenv'
+import mysql from 'mysql2/promise'
+import process from 'node:process'
+
+dotenv.config()
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT),
+  ssl: { rejectUnauthorized: false },
+})
 
 try {
   async function addColumnIfMissing(tableName, columnName, definition) {
@@ -32,9 +45,6 @@ try {
     costo_estimado: 'DECIMAL(12, 2) NOT NULL DEFAULT 0',
     abono_inicial: 'DECIMAL(12, 2) NOT NULL DEFAULT 0',
     observaciones_recepcion: 'TEXT NULL',
-    observaciones_cierre: 'TEXT NULL',
-    fecha_asignacion: 'TIMESTAMP NULL',
-    fecha_cierre: 'TIMESTAMP NULL',
     actualizada_en: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
   }
 
@@ -45,51 +55,12 @@ try {
     await addColumnIfMissing('ordenes_servicio', name, definition)
   }
 
-  const [oldTechnicianForeignKeys] = await pool.query(
-    `SELECT DISTINCT CONSTRAINT_NAME AS constraintName
-     FROM information_schema.KEY_COLUMN_USAGE
-     WHERE TABLE_SCHEMA = DATABASE()
-       AND TABLE_NAME = 'ordenes_servicio'
-       AND COLUMN_NAME = 'tecnico_id'
-       AND REFERENCED_TABLE_NAME = 'usuarios'`,
-  )
-  for (const foreignKey of oldTechnicianForeignKeys) {
-    await pool.query(`ALTER TABLE ordenes_servicio DROP FOREIGN KEY \`${foreignKey.constraintName}\``)
-    await pool.query(`
-      UPDATE ordenes_servicio o
-      INNER JOIN tecnicos t ON t.usuario_id = o.tecnico_id
-      SET o.tecnico_id = t.id
-    `)
-  }
-
-  const [technicianForeignKeys] = await pool.query(
-    `SELECT COUNT(*) AS count
-     FROM information_schema.KEY_COLUMN_USAGE
-     WHERE TABLE_SCHEMA = DATABASE()
-       AND TABLE_NAME = 'ordenes_servicio'
-       AND COLUMN_NAME = 'tecnico_id'
-       AND REFERENCED_TABLE_NAME = 'tecnicos'`,
-  )
-  if (technicianForeignKeys[0].count === 0) {
-    await pool.query(`
-      UPDATE ordenes_servicio o
-      LEFT JOIN tecnicos t ON t.id = o.tecnico_id
-      SET o.tecnico_id = NULL
-      WHERE o.tecnico_id IS NOT NULL AND t.id IS NULL
-    `)
-    await pool.query(`
-      ALTER TABLE ordenes_servicio
-      ADD CONSTRAINT fk_ordenes_tecnico
-      FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id) ON DELETE SET NULL
-    `)
-  }
-
   await pool.query('ALTER TABLE equipos MODIFY COLUMN motivo_ingreso TEXT NULL')
 
   await pool.query(`
     ALTER TABLE ordenes_servicio MODIFY COLUMN estado
     ENUM('RECIBIDA', 'PENDIENTE', 'EN_REVISION', 'EN_REPARACION', 'EN_PROCESO',
-      'EN_ESPERA_REPUESTO', 'REPARADA', 'COMPLETADO', 'ENTREGADA', 'CERRADA', 'CANCELADA')
+      'EN_ESPERA_REPUESTO', 'REPARADA', 'COMPLETADO', 'ENTREGADA', 'CANCELADA')
     NOT NULL DEFAULT 'RECIBIDA'
   `)
 
