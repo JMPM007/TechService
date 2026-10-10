@@ -6,7 +6,8 @@ export const EquipoModel = {
     let query = `
       SELECT 
         e.*,
-        c.nombre AS cliente_nombre,
+        e.tipo AS tipo_equipo,
+        CONCAT(c.nombres, ' ', c.apellidos) AS cliente_nombre,
         c.cedula AS cliente_cedula,
         c.telefono AS cliente_telefono,
         c.email AS cliente_email
@@ -21,11 +22,12 @@ export const EquipoModel = {
         WHERE e.numero_serie LIKE ?
            OR e.marca LIKE ?
            OR e.modelo LIKE ?
-           OR e.tipo_equipo LIKE ?
-           OR c.nombre LIKE ?
+           OR e.tipo LIKE ?
+           OR c.nombres LIKE ?
+           OR c.apellidos LIKE ?
            OR c.cedula LIKE ?
       `
-      params.push(term, term, term, term, term, term)
+      params.push(term, term, term, term, term, term, term)
     }
 
     query += ` ORDER BY e.id DESC`
@@ -39,7 +41,8 @@ export const EquipoModel = {
     const query = `
       SELECT 
         e.*,
-        c.nombre AS cliente_nombre,
+        e.tipo AS tipo_equipo,
+        CONCAT(c.nombres, ' ', c.apellidos) AS cliente_nombre,
         c.cedula AS cliente_cedula,
         c.telefono AS cliente_telefono,
         c.email AS cliente_email,
@@ -57,7 +60,8 @@ export const EquipoModel = {
     const query = `
       SELECT 
         e.*,
-        c.nombre AS cliente_nombre,
+        e.tipo AS tipo_equipo,
+        CONCAT(c.nombres, ' ', c.apellidos) AS cliente_nombre,
         c.cedula AS cliente_cedula,
         c.telefono AS cliente_telefono,
         c.email AS cliente_email,
@@ -74,7 +78,7 @@ export const EquipoModel = {
   async update(id, data) {
     const query = `
       UPDATE equipos SET
-        tipo_equipo = ?,
+        tipo = ?,
         marca = ?,
         modelo = ?,
         numero_serie = ?,
@@ -89,7 +93,7 @@ export const EquipoModel = {
       WHERE id = ?
     `
     const values = [
-      data.tipo_equipo,
+      data.tipo_equipo ?? data.tipo,
       data.marca,
       data.modelo,
       data.numero_serie,
@@ -113,7 +117,7 @@ export const EquipoModel = {
   async create(data) {
     const query = `
       INSERT INTO equipos (
-        cliente_id, numero_serie, tipo_equipo, marca, modelo,
+        cliente_id, numero_serie, tipo, marca, modelo,
         procesador, memoria_ram, almacenamiento, tarjeta_grafica,
         sistema_operativo, estado_fisico, accesorios, observaciones
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -121,7 +125,7 @@ export const EquipoModel = {
     const values = [
       data.cliente_id,
       data.numero_serie,
-      data.tipo_equipo,
+      data.tipo_equipo ?? data.tipo,
       data.marca,
       data.modelo,
       data.procesador || null,
@@ -136,5 +140,22 @@ export const EquipoModel = {
 
     const [result] = await pool.query(query, values)
     return this.findById(result.insertId)
+  },
+
+  async createReception({ cliente_id, tipo, marca, modelo, numero_serie, motivo_ingreso }) {
+    const [result] = await pool.query(
+      `INSERT INTO equipos (cliente_id, tipo, marca, modelo, numero_serie, motivo_ingreso)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [cliente_id, tipo, marca, modelo, numero_serie || null, motivo_ingreso]
+    )
+    return result.insertId
+  },
+
+  async findByClienteId(cliente_id) {
+    const [rows] = await pool.query(
+      `SELECT * FROM equipos WHERE cliente_id = ? ORDER BY fecha_ingreso DESC`,
+      [cliente_id]
+    )
+    return rows
   }
 }

@@ -1,10 +1,8 @@
 import { OrdenServicioModel } from "../models/ordenServicioModel.js"
 import { EquipoModel } from "../models/equipoModel.js"
-// Importamos el modelo complementario de tus compañeros para el historial de estados
 import { OrdenModel } from "../models/ordenModel.js" 
 
 export const OrdenServicioController = {
-  // === HU-15: CREAR ORDEN DE SERVICIO (Tu desarrollo local) ===
   async createOrden(req, res) {
     try {
       const {
@@ -97,7 +95,6 @@ export const OrdenServicioController = {
     }
   },
 
-  // === HU-15: CONSULTAR POR ID (Tu desarrollo local) ===
   async getOrdenById(req, res) {
     try {
       const { id } = req.params
@@ -113,7 +110,6 @@ export const OrdenServicioController = {
     }
   },
 
-  // === HU-13 & HU-14: LÓGICA INTEGRADAS DEL EQUIPO ===
   async asignarOrden(req, res) {
     try {
       const { id } = req.params

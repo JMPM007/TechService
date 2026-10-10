@@ -11,5 +11,3 @@ export const findUserByEmail = async(email) =>{
     return rows[0]
 }
 
-
-

@@ -1,5 +1,6 @@
 // Script de verificación automatizada de HU-13, HU-14 y HU-15
 
+
 async function runTestSuite() {
   const BASE_URL = 'http://localhost:3000/api'
   let passed = 0
