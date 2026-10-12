@@ -32,7 +32,10 @@ async function request(path, options, requireToken) {
       headers,
     })
   } catch {
-    throw new ApiError('No fue posible conectar con el servidor.', 0)
+    throw new ApiError(
+      'No se pudo conectar con la API. Verifica que el backend esté iniciado y que VITE_API_URL apunte a la dirección correcta.',
+      0,
+    )
   }
 
   const body = await response.json().catch(() => null)

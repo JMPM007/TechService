@@ -309,6 +309,156 @@ button:disabled {
   color: #52606d;
 }
 
+.equipment-history-card {
+  margin-top: 24px;
+}
+
+.equipment-history-card > p {
+  max-width: 760px;
+  line-height: 1.55;
+}
+
+.equipment-history-step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.equipment-history-step-number {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #0f766e;
+  font-weight: 700;
+}
+
+.equipment-history-step-content {
+  min-width: 0;
+}
+
+.equipment-history-step-content h3 {
+  margin: 2px 0 6px;
+  color: #102a43;
+}
+
+.equipment-history-step-content > p {
+  margin: 0 0 12px;
+  color: #52606d;
+}
+
+.equipment-search-form,
+.equipment-select-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.equipment-search-form input,
+.equipment-select-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #aebdca;
+  border-radius: 8px;
+  color: #243b53;
+  background: #ffffff;
+  font: inherit;
+}
+
+.equipment-search-form input:focus,
+.equipment-select-form select:focus {
+  border-color: #0f766e;
+  outline: 3px solid rgba(15, 118, 110, 0.18);
+}
+
+.equipment-history-button {
+  min-height: 44px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.equipment-history-button.secondary {
+  color: #0f766e;
+  background: #d9f2ef;
+}
+
+.equipment-history-button.secondary:hover:not(:disabled) {
+  background: #bce5df;
+}
+
+.equipment-history-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.equipment-history-results {
+  margin-top: 24px;
+}
+
+.equipment-history-list {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding-left: 22px;
+}
+
+.equipment-history-order {
+  padding: 16px;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+
+.equipment-history-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.equipment-history-order-header span {
+  color: #52606d;
+  font-size: 0.9rem;
+}
+
+.equipment-history-list .equipment-history-order p {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 560px) {
+  .equipment-search-form,
+  .equipment-select-form {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-history-button {
+    width: 100%;
+  }
+
+  .equipment-history-order-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
 .diagnosis-card {
   margin-top: 24px;
 }
