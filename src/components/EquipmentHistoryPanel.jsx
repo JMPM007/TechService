@@ -18,7 +18,6 @@ export default function EquipmentHistoryPanel({ isStaff }) {
     if (isStaff) return
 
     let active = true
-    setLoading(true)
     getMyEquipmentList()
       .then((items) => {
         if (active) setEquipos(items)

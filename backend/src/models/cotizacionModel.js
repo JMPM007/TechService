@@ -49,6 +49,17 @@ export async function crearCotizacion({ ordenId, usuarioId, conceptos, subtotal,
       )
     }
 
+    const [laborTotals] = await connection.query(
+      `SELECT COALESCE(SUM(costo), 0) AS total
+       FROM servicios_mano_obra WHERE orden_id = ?`,
+      [ordenId],
+    )
+    const totalConManoObra = Math.round((Number(total) + Number(laborTotals[0].total) + Number.EPSILON) * 100) / 100
+    await connection.query(
+      'UPDATE cotizaciones SET subtotal = ?, total = ? WHERE id = ?',
+      [totalConManoObra, totalConManoObra, quoteResult.insertId],
+    )
+
     await connection.commit()
     return quoteResult.insertId
   } catch (error) {
@@ -86,10 +97,19 @@ export async function obtenerCotizacion(ordenId) {
      ORDER BY id ASC`,
     [quotes[0].id],
   )
-  return { ...quotes[0], conceptos }
+  const [decisiones] = await pool.query(
+    `SELECT d.id, d.estado, d.usuario_id AS usuarioId,
+      u.nombre AS usuarioNombre, d.registrado_en AS registradoEn
+     FROM cotizacion_decisiones d
+     INNER JOIN usuarios u ON u.id = d.usuario_id
+     WHERE d.cotizacion_id = ?
+     ORDER BY d.registrado_en ASC, d.id ASC`,
+    [quotes[0].id],
+  )
+  return { ...quotes[0], conceptos, decisiones }
 }
 
-export async function actualizarConceptosCotizacion({ ordenId, conceptos, subtotal, total }) {
+export async function actualizarConceptosCotizacion({ ordenId, conceptos, total }) {
   const connection = await pool.getConnection()
 
   try {
@@ -116,9 +136,15 @@ export async function actualizarConceptosCotizacion({ ordenId, conceptos, subtot
         [quotes[0].id, concepto.tipo, concepto.descripcion, concepto.cantidad, concepto.precioUnitario, concepto.observaciones || null],
       )
     }
+    const [laborTotals] = await connection.query(
+      `SELECT COALESCE(SUM(costo), 0) AS total
+       FROM servicios_mano_obra WHERE orden_id = ?`,
+      [ordenId],
+    )
+    const totalConManoObra = Math.round((Number(total) + Number(laborTotals[0].total) + Number.EPSILON) * 100) / 100
     await connection.query(
       'UPDATE cotizaciones SET subtotal = ?, total = ? WHERE id = ?',
-      [subtotal, total, quotes[0].id],
+      [totalConManoObra, totalConManoObra, quotes[0].id],
     )
     await connection.commit()
     return 'UPDATED'
@@ -136,4 +162,51 @@ export async function actualizarEstadoCotizacion(ordenId, estado) {
     [estado, ordenId, 'CANCELADA', estado],
   )
   return result.affectedRows
+}
+
+export async function registrarDecisionCotizacion({ ordenId, usuarioId, estado }) {
+  const connection = await pool.getConnection()
+
+  try {
+    await connection.beginTransaction()
+    const [quotes] = await connection.query(
+      `SELECT c.id, c.estado, cl.usuario_id AS clienteUsuarioId
+       FROM cotizaciones c
+       INNER JOIN ordenes_servicio o ON o.id = c.orden_id
+       INNER JOIN equipos e ON e.id = o.equipo_id
+       INNER JOIN clientes cl ON cl.id = e.cliente_id
+       WHERE c.orden_id = ?
+       FOR UPDATE`,
+      [ordenId],
+    )
+    if (!quotes.length) {
+      await connection.rollback()
+      return 'NOT_FOUND'
+    }
+    if (quotes[0].clienteUsuarioId !== usuarioId) {
+      await connection.rollback()
+      return 'FORBIDDEN'
+    }
+    if (quotes[0].estado !== 'PENDIENTE_APROBACION') {
+      await connection.rollback()
+      return 'ALREADY_DECIDED'
+    }
+
+    await connection.query(
+      `INSERT INTO cotizacion_decisiones (cotizacion_id, estado, usuario_id)
+       VALUES (?, ?, ?)`,
+      [quotes[0].id, estado, usuarioId],
+    )
+    await connection.query(
+      'UPDATE cotizaciones SET estado = ?, actualizada_en = CURRENT_TIMESTAMP WHERE id = ?',
+      [estado, quotes[0].id],
+    )
+    await connection.commit()
+    return 'UPDATED'
+  } catch (error) {
+    await connection.rollback()
+    throw error
+  } finally {
+    connection.release()
+  }
 }
