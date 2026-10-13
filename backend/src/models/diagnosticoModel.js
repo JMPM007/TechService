@@ -1,4 +1,5 @@
 import pool from '../config/db.js'
+import { codigoOrdenParaId } from './ordenServicioModel.js'
 
 export async function buscarTecnicoPorUsuario(usuarioId) {
   const [rows] = await pool.query(
@@ -48,6 +49,7 @@ export async function crearDiagnostico({
 export async function crearOrdenYDiagnostico({
   equipoId,
   tecnicoId,
+  usuarioId,
   descripcion,
   fallaEncontrada,
   fechaDiagnostico,
@@ -65,10 +67,14 @@ export async function crearOrdenYDiagnostico({
     )
     const ordenId = ordenResult.insertId
     await connection.query(
+      'UPDATE ordenes_servicio SET codigo_orden = ? WHERE id = ?',
+      [codigoOrdenParaId(ordenId), ordenId],
+    )
+    await connection.query(
       `INSERT INTO historial_estados_orden
         (orden_id, estado_anterior, estado_nuevo, usuario_id, observacion)
        VALUES (?, NULL, 'RECIBIDA', ?, 'Registro inicial de la orden')`,
-      [ordenId, tecnicoId],
+      [ordenId, usuarioId],
     )
 
     const [diagnosticoResult] = await connection.query(

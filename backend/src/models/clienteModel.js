@@ -23,3 +23,22 @@ export async function buscarClientePorUsuarioId(usuario_id) {
   )
   return rows[0] || null
 }
+
+export async function listarClientes(search = '') {
+  const term = search.trim()
+  const params = []
+  let query = `
+    SELECT id, usuario_id, cedula, nombres, apellidos, telefono, email, creado_en
+    FROM clientes
+  `
+  if (term) {
+    const value = `%${term}%`
+    query += `
+      WHERE cedula LIKE ? OR nombres LIKE ? OR apellidos LIKE ? OR email LIKE ?
+    `
+    params.push(value, value, value, value)
+  }
+  query += ' ORDER BY nombres ASC, apellidos ASC'
+  const [rows] = await pool.query(query, params)
+  return rows
+}

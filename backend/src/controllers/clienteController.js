@@ -1,7 +1,18 @@
-import { buscarClientePorCedulaOEmail, crearCliente } from '../models/clienteModel.js'
+import { buscarClientePorCedulaOEmail, crearCliente, listarClientes } from '../models/clienteModel.js'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const TELEFONO_REGEX = /^[0-9]{7,15}$/
+
+export async function consultarClientes(req, res) {
+  try {
+    const search = typeof req.query.search === 'string' ? req.query.search : ''
+    const clientes = await listarClientes(search)
+    return res.json({ success: true, total: clientes.length, clientes })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'No fue posible consultar los clientes' })
+  }
+}
 
 export async function registrarCliente(req, res) {
   try {

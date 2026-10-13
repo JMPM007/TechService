@@ -1,10 +1,11 @@
 import { Router } from 'express'
-import { buscarClientePorCedula, registrarCliente } from '../controllers/clienteController.js'
+import { buscarClientePorCedula, consultarClientes, registrarCliente } from '../controllers/clienteController.js'
 import { authorizeRoles, verifyToken } from '../middlewares/authMiddleware.js'
 
 const router = Router()
 
 router.post('/clientes', registrarCliente)
+router.get('/clientes', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), consultarClientes)
 router.get('/clientes/cedula/:cedula', verifyToken, authorizeRoles('ADMIN', 'TECNICO'), buscarClientePorCedula)
 
 export default router

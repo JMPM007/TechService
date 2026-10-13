@@ -49,6 +49,9 @@ function OperationsPanel({ profile }) {
   const [equipment, setEquipment] = useState([])
   const [orders, setOrders] = useState([])
   const [technicians, setTechnicians] = useState([])
+  const [technicianSearch, setTechnicianSearch] = useState('')
+  const [technicianSpecialty, setTechnicianSpecialty] = useState('')
+  const [technicianStatus, setTechnicianStatus] = useState('')
   const [equipmentForm, setEquipmentForm] = useState(emptyEquipment)
   const [editEquipment, setEditEquipment] = useState(null)
   const [technicianForm, setTechnicianForm] = useState(emptyTechnician)
@@ -180,6 +183,17 @@ function OperationsPanel({ profile }) {
   const updateEquipmentField = (event) => setEquipmentForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   const updateTechnicianField = (event) => setTechnicianForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   const updateOrderField = (event) => setOrderForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+  const technicianSpecialties = [...new Set(technicians.map((technician) => technician.especialidad).filter(Boolean))]
+  const filteredTechnicians = technicians.filter((technician) => {
+    const searchTerm = technicianSearch.trim().toLocaleLowerCase()
+    const matchesSearch = !searchTerm
+      || technician.nombre.toLocaleLowerCase().includes(searchTerm)
+      || technician.cedula.includes(technicianSearch.trim())
+      || technician.email.toLocaleLowerCase().includes(searchTerm)
+    return matchesSearch
+      && (!technicianSpecialty || technician.especialidad === technicianSpecialty)
+      && (!technicianStatus || technician.estado === technicianStatus)
+  })
 
   return (
     <section className="operations-panel">
@@ -238,7 +252,7 @@ function OperationsPanel({ profile }) {
         </div>
       )}
 
-      {section === 'tecnicos' && isAdmin && <section className="operations-grid"><section className="card"><h2>Registrar técnico</h2><form onSubmit={submitTechnician}>{Object.entries({ nombre: 'Nombre', email: 'Correo', password: 'Contraseña', cedula: 'Cédula', telefono: 'Teléfono', especialidad: 'Especialidad' }).map(([name, label]) => <div key={name}><label htmlFor={`technician-${name}`}>{label}</label><input id={`technician-${name}`} name={name} type={name === 'password' ? 'password' : name === 'email' ? 'email' : 'text'} value={technicianForm[name]} onChange={updateTechnicianField} required /></div>)}<button type="submit">Registrar técnico</button></form></section><section className="card"><h2>Disponibilidad</h2><div className="data-list">{technicians.map((technician) => <article className="data-row" key={technician.tecnico_id}><div><strong>{technician.nombre}</strong><span>{technician.especialidad} · {technician.telefono}</span><small>{technician.email}</small></div><select value={technician.estado} onChange={(event) => changeTechnicianStatus(technician.tecnico_id, event.target.value)}><option>DISPONIBLE</option><option>OCUPADO</option><option>INACTIVO</option></select></article>)}</div></section></section>}
+      {section === 'tecnicos' && isAdmin && <section className="operations-grid"><section className="card"><h2>Registrar técnico</h2><form onSubmit={submitTechnician}>{Object.entries({ nombre: 'Nombre', email: 'Correo', password: 'Contraseña', cedula: 'Cédula', telefono: 'Teléfono', especialidad: 'Especialidad' }).map(([name, label]) => <div key={name}><label htmlFor={`technician-${name}`}>{label}</label><input id={`technician-${name}`} name={name} type={name === 'password' ? 'password' : name === 'email' ? 'email' : 'text'} value={technicianForm[name]} onChange={updateTechnicianField} required /></div>)}<button type="submit">Registrar técnico</button></form></section><section className="card"><h2>Disponibilidad</h2><div className="form-grid-two"><div><label htmlFor="technician-search">Buscar técnico</label><input id="technician-search" value={technicianSearch} onChange={(event) => setTechnicianSearch(event.target.value)} placeholder="Nombre, cédula o correo" /></div><div><label htmlFor="technician-specialty">Especialidad</label><select id="technician-specialty" value={technicianSpecialty} onChange={(event) => setTechnicianSpecialty(event.target.value)}><option value="">Todas</option>{technicianSpecialties.map((specialty) => <option key={specialty} value={specialty}>{specialty}</option>)}</select></div><div><label htmlFor="technician-status">Estado</label><select id="technician-status" value={technicianStatus} onChange={(event) => setTechnicianStatus(event.target.value)}><option value="">Todos</option><option value="DISPONIBLE">Disponible</option><option value="OCUPADO">Ocupado</option><option value="INACTIVO">Inactivo</option></select></div></div><div className="data-list">{filteredTechnicians.map((technician) => <article className="data-row" key={technician.tecnico_id}><div><strong>{technician.nombre}</strong><span>{technician.especialidad} · {technician.telefono}</span><small>{technician.email}</small></div><select value={technician.estado} onChange={(event) => changeTechnicianStatus(technician.tecnico_id, event.target.value)}><option>DISPONIBLE</option><option>OCUPADO</option><option>INACTIVO</option></select></article>)}{!filteredTechnicians.length && <p className="empty-state">No se encontraron técnicos con esos filtros.</p>}</div></section></section>}
     </section>
   )
 }
