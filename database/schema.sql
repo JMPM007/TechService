@@ -85,6 +85,21 @@ CREATE TABLE IF NOT EXISTS historial_estados_orden (
     INDEX idx_historial_orden_fecha (orden_id, creado_en, id)
 );
 
+CREATE TABLE IF NOT EXISTS comprobantes_recepcion (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL UNIQUE,
+    numero_comprobante VARCHAR(40) NOT NULL UNIQUE,
+    generado_por INT NOT NULL,
+    falla_reportada TEXT NOT NULL,
+    estado_fisico TEXT NOT NULL,
+    accesorios TEXT NOT NULL,
+    observaciones TEXT NULL,
+    fecha_recepcion TIMESTAMP NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
+    FOREIGN KEY (generado_por) REFERENCES usuarios(id) ON DELETE RESTRICT
+);
+
 CREATE TABLE IF NOT EXISTS diagnosticos_orden (
     id INT AUTO_INCREMENT PRIMARY KEY,
     orden_id INT NOT NULL UNIQUE,
