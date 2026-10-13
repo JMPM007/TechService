@@ -8,6 +8,7 @@ import technicianRoutes from './routes/technicianRoutes.js'
 import equiposRoutes from './routes/equiposRoutes.js'
 import ordenRoutes from './routes/ordenRoutes.js'
 import cotizacionRoutes from './routes/cotizacionRoutes.js'
+import repuestosRoutes from './routes/repuestosRoutes.js'
 
 const app = express()
 const port = Number(process.env.PORT) || 3000
@@ -21,6 +22,7 @@ app.use('/api/tecnicos', technicianRoutes)
 app.use('/api/equipos', equiposRoutes)
 app.use('/api/ordenes', ordenRoutes)
 app.use('/api/ordenes', cotizacionRoutes)
+app.use('/api/ordenes-repuestos', repuestosRoutes)
 
 app.get('/api/test-db', async (req, res) => {
   try {
