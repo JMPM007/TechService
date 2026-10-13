@@ -14,6 +14,7 @@ import OperationsPanel from './components/OperationsPanel'
 import ClientsPanel from './components/ClientsPanel'
 import RepuestosPanel from './components/RepuestosPanel'
 import EquipmentHistoryPanel from './components/EquipmentHistoryPanel'
+import ReceiptPanel from './components/ReceiptPanel'
 import './App.css'
 
 const emptyPasswordForm = {
@@ -28,6 +29,7 @@ const viewSegments = {
   historial: 'historial',
   operaciones: '',
   repuestos: 'repuestos',
+  recepcion: 'recepcion',
   diagnostico: 'diagnostico',
   cotizacion: 'cotizaciones',
 }
@@ -46,12 +48,12 @@ function getPathForView(role, view) {
 
 function getAllowedViews(role) {
   if (role === 'ADMIN') {
-    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'cotizacion']
+    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'cotizacion']
   }
   if (role === 'TECNICO') {
-    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'diagnostico', 'cotizacion']
+    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'diagnostico', 'cotizacion']
   }
-  return ['perfil']
+  return ['perfil', 'recepcion', 'cotizacion']
 }
 
 function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
@@ -408,10 +410,11 @@ function App() {
       ['historial', 'Historial de equipos'],
         ['operaciones', 'Operaciones'],
       ['repuestos', 'Repuestos'],
+      ['recepcion', 'Comprobantes'],
       ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
         ['cotizacion', 'Cotizaciones'],
       ]
-    : [['perfil', 'Mi cuenta'], ['historial', 'Historial de equipos']]
+    : [['perfil', 'Mi cuenta'], ['recepcion', 'Comprobantes'], ['historial', 'Historial de equipos'], ['cotizacion', 'Cotización']]
 
   return (
     <main className="page dashboard-page">
@@ -453,8 +456,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'recepcion' ? 'Comprobantes de recepción' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : activeView === 'cotizacion' && !isStaff ? 'Decisión de cotización' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -581,10 +583,11 @@ function App() {
         </div>
 
         {activeView === 'historial' && <EquipmentHistoryPanel isStaff={isStaff} />}
+        {activeView === 'recepcion' && <ReceiptPanel isStaff={isStaff} />}
         {activeView === 'clientes' && isStaff && <ClientsPanel />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
-        {activeView === 'cotizacion' && isStaff && <QuotePanel />}
+        {activeView === 'cotizacion' && <QuotePanel isStaff={isStaff} isAdmin={profile?.rol === 'ADMIN'} />}
         {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}
       </section>
     </main>

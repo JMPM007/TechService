@@ -49,6 +49,17 @@ export async function crearCotizacion({ ordenId, usuarioId, conceptos, subtotal,
       )
     }
 
+    const [laborTotals] = await connection.query(
+      `SELECT COALESCE(SUM(costo), 0) AS total
+       FROM servicios_mano_obra WHERE orden_id = ?`,
+      [ordenId],
+    )
+    const totalConManoObra = Math.round((Number(total) + Number(laborTotals[0].total) + Number.EPSILON) * 100) / 100
+    await connection.query(
+      'UPDATE cotizaciones SET subtotal = ?, total = ? WHERE id = ?',
+      [totalConManoObra, totalConManoObra, quoteResult.insertId],
+    )
+
     await connection.commit()
     return quoteResult.insertId
   } catch (error) {
@@ -98,7 +109,7 @@ export async function obtenerCotizacion(ordenId) {
   return { ...quotes[0], conceptos, decisiones }
 }
 
-export async function actualizarConceptosCotizacion({ ordenId, conceptos, subtotal, total }) {
+export async function actualizarConceptosCotizacion({ ordenId, conceptos, total }) {
   const connection = await pool.getConnection()
 
   try {
@@ -125,9 +136,15 @@ export async function actualizarConceptosCotizacion({ ordenId, conceptos, subtot
         [quotes[0].id, concepto.tipo, concepto.descripcion, concepto.cantidad, concepto.precioUnitario, concepto.observaciones || null],
       )
     }
+    const [laborTotals] = await connection.query(
+      `SELECT COALESCE(SUM(costo), 0) AS total
+       FROM servicios_mano_obra WHERE orden_id = ?`,
+      [ordenId],
+    )
+    const totalConManoObra = Math.round((Number(total) + Number(laborTotals[0].total) + Number.EPSILON) * 100) / 100
     await connection.query(
       'UPDATE cotizaciones SET subtotal = ?, total = ? WHERE id = ?',
-      [subtotal, total, quotes[0].id],
+      [totalConManoObra, totalConManoObra, quotes[0].id],
     )
     await connection.commit()
     return 'UPDATED'
