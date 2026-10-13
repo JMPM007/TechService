@@ -2,7 +2,6 @@ import { useState } from 'react'
 import {
   createOrderQuote,
   getOrderQuote,
-  registerOrderQuoteDecision,
   updateOrderQuoteConcepts,
   updateOrderQuoteStatus,
 } from '../services/orderService'
@@ -23,7 +22,7 @@ const emptyQuote = {
   total: 0,
 }
 
-function QuotePanel({ isStaff, isAdmin }) {
+function QuotePanel() {
   const [quote, setQuote] = useState(emptyQuote)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -61,12 +60,11 @@ function QuotePanel({ isStaff, isAdmin }) {
         orderId: quote.orderId,
         conceptos: response.cotizacion.conceptos,
         estado: response.cotizacion.estado,
-        decisiones: response.cotizacion.decisiones,
         subtotal: Number(response.cotizacion.subtotal),
         total: Number(response.cotizacion.total),
       })
     } catch (requestError) {
-      setQuote((current) => ({ ...current, conceptos: [{ ...emptyConcept }], estado: '', decisiones: [], subtotal: 0, total: 0 }))
+      setQuote((current) => ({ ...current, conceptos: [{ ...emptyConcept }], estado: '', subtotal: 0, total: 0 }))
       if (requestError.status !== 404) setError(requestError.message)
     } finally {
       setLoading(false)
@@ -114,26 +112,6 @@ function QuotePanel({ isStaff, isAdmin }) {
     }
   }
 
-  async function registerDecision(estado) {
-    setLoading(true)
-    setError('')
-    setMessage('')
-    try {
-      const response = await registerOrderQuoteDecision(quote.orderId, estado)
-      const saved = response.cotizacion
-      setQuote((current) => ({
-        ...current,
-        estado: saved.estado,
-        decisiones: saved.decisiones,
-      }))
-      setMessage(response.mensaje)
-    } catch (requestError) {
-      setError(requestError.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const calculatedTotal = quote.conceptos.reduce(
     (sum, concepto) => sum + Number(concepto.cantidad || 0) * Number(concepto.precioUnitario || 0),
     0,
@@ -142,7 +120,7 @@ function QuotePanel({ isStaff, isAdmin }) {
   return (
     <section className="card quote-card">
       <h2>Cotización de reparación</h2>
-      <p>{isStaff ? 'Consulta o genera una cotización para una orden con diagnóstico registrado.' : 'Consulta la cotización de tu orden y registra tu decisión.'}</p>
+      <p>Consulta o genera una cotización para una orden con diagnóstico registrado.</p>
 
       <form onSubmit={loadQuote} className="inline-form">
         <label htmlFor="quote-order-id">Número de orden</label>
@@ -153,7 +131,7 @@ function QuotePanel({ isStaff, isAdmin }) {
       {error && <p className="alert error">{error}</p>}
       {message && <p className="alert success">{message}</p>}
 
-      {isStaff && <form onSubmit={saveQuote}>
+      <form onSubmit={saveQuote}>
         {quote.conceptos.map((concepto, index) => (
           <div className="quote-concept" key={`${index}-${concepto.id ?? 'new'}`}>
             <label htmlFor={`quote-type-${index}`}>Tipo</label>
@@ -179,41 +157,17 @@ function QuotePanel({ isStaff, isAdmin }) {
         <button type="submit" disabled={loading || !quote.orderId || quote.estado === 'APROBADA' || quote.estado === 'RECHAZADA' || quote.estado === 'CANCELADA'}>
           {quote.estado ? 'Actualizar conceptos' : 'Generar cotización'}
         </button>
-      </form>}
+      </form>
 
-      {!isStaff && quote.estado === 'PENDIENTE_APROBACION' && (
-        <div className="quote-decision-actions">
-          <p>Esta decisión quedará registrada con la fecha y hora actuales y no podrá modificarse desde tu cuenta.</p>
-          <button type="button" onClick={() => registerDecision('APROBADA')} disabled={loading}>Aprobar cotización</button>
-          <button type="button" className="secondary-button" onClick={() => registerDecision('RECHAZADA')} disabled={loading}>Rechazar cotización</button>
-        </div>
-      )}
-
-      {quote.estado && isAdmin && (
+      {quote.estado && (
         <label htmlFor="quote-status">Estado
-          <select id="quote-status" value={quote.estado} onChange={changeStatus} disabled={loading || quote.estado !== 'PENDIENTE_APROBACION'}>
+          <select id="quote-status" value={quote.estado} onChange={changeStatus} disabled={loading}>
             <option value="PENDIENTE_APROBACION">Pendiente de aprobación</option>
+            <option value="APROBADA">Aprobada</option>
+            <option value="RECHAZADA">Rechazada</option>
             <option value="CANCELADA">Cancelada</option>
           </select>
         </label>
-      )}
-
-      {quote.estado && !isStaff && (
-        <p className="quote-status-summary">Estado actual: <strong>{quote.estado}</strong></p>
-      )}
-
-      {quote.decisiones?.length > 0 && (
-        <div className="quote-decision-history">
-          <h3>Historial de decisiones</h3>
-          <ul>
-            {quote.decisiones.map((decision) => (
-              <li key={decision.id}>
-                <strong>{decision.estado}</strong>
-                <span>{decision.usuarioNombre} · {new Date(decision.registradoEn).toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       )}
     </section>
   )
