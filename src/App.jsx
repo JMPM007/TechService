@@ -12,6 +12,7 @@ import QuotePanel from './components/QuotePanel'
 import OperationsPanel from './components/OperationsPanel'
 import ClientsPanel from './components/ClientsPanel'
 import RepuestosPanel from './components/RepuestosPanel'
+import UsersPanel from './components/UsersPanel'
 import './App.css'
 
 const emptyPasswordForm = {
@@ -342,11 +343,12 @@ function App() {
   const viewLabels = isStaff
     ? [
         ['perfil', 'Mi cuenta'],
-      ['clientes', 'Clientes'],
-      ['historial', 'Historial'],
+        ...(profile?.rol === 'ADMIN' ? [['usuarios', 'Usuarios']] : []),
+        ['clientes', 'Clientes'],
+        ['historial', 'Historial'],
         ['operaciones', 'Operaciones'],
-      ['repuestos', 'Repuestos'],
-      ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+        ['repuestos', 'Repuestos'],
+        ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
         ['cotizacion', 'Cotizaciones'],
       ]
     : [['perfil', 'Mi cuenta']]
@@ -391,7 +393,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -517,7 +519,8 @@ function App() {
         )}
         </div>
 
-        {activeView === 'clientes' && isStaff && <ClientsPanel />}
+        {activeView === 'usuarios' && profile?.rol === 'ADMIN' && <UsersPanel />}
+        {activeView === 'clientes' && isStaff && <ClientsPanel userRole={profile?.rol} />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
         {activeView === 'cotizacion' && isStaff && <QuotePanel />}
@@ -527,4 +530,4 @@ function App() {
   )
 }
 
-export default App
+export default App
