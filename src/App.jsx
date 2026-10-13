@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import {
   changeMyPassword,
   getMyProfile,
@@ -12,6 +13,7 @@ import QuotePanel from './components/QuotePanel'
 import OperationsPanel from './components/OperationsPanel'
 import ClientsPanel from './components/ClientsPanel'
 import RepuestosPanel from './components/RepuestosPanel'
+import EquipmentHistoryPanel from './components/EquipmentHistoryPanel'
 import UsersPanel from './components/UsersPanel'
 import './App.css'
 
@@ -19,6 +21,39 @@ const emptyPasswordForm = {
   contrasenaActual: '',
   nuevaContrasena: '',
   confirmacionContrasena: '',
+}
+
+const viewSegments = {
+  perfil: 'perfil',
+  clientes: 'clientes',
+  historial: 'historial',
+  operaciones: '',
+  repuestos: 'repuestos',
+  diagnostico: 'diagnostico',
+  cotizacion: 'cotizaciones',
+  usuarios: 'usuarios',
+}
+
+function getRoleBasePath(role) {
+  if (role === 'ADMIN') return '/admin-panel'
+  if (role === 'TECNICO') return '/tecnico-panel'
+  return '/cliente-panel'
+}
+
+function getPathForView(role, view) {
+  const basePath = getRoleBasePath(role)
+  const segment = viewSegments[view]
+  return segment ? `${basePath}/${segment}` : basePath
+}
+
+function getAllowedViews(role) {
+  if (role === 'ADMIN') {
+    return ['operaciones', 'perfil', 'usuarios', 'clientes', 'historial', 'repuestos', 'cotizacion']
+  }
+  if (role === 'TECNICO') {
+    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'diagnostico', 'cotizacion']
+  }
+  return ['perfil']
 }
 
 function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
@@ -50,10 +85,11 @@ function PasswordInput({ id, name, value, onChange, autoComplete, minLength, max
 }
 
 function App() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [authenticated, setAuthenticated] = useState(
     () => Boolean(localStorage.getItem('techservice_token')),
   )
-  const [authView, setAuthView] = useState('login')
   const [profile, setProfile] = useState(null)
   const [profileForm, setProfileForm] = useState({
     nombre: '',
@@ -68,7 +104,11 @@ function App() {
   const [orderId, setOrderId] = useState('')
   const [orderHistory, setOrderHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
-  const [activeView, setActiveView] = useState('operaciones')
+  const requestedAuthView = location.pathname === '/register' ? 'register' : 'login'
+  const isStaff = profile?.rol === 'ADMIN' || profile?.rol === 'TECNICO'
+  const allowedViews = getAllowedViews(profile?.rol)
+  const activeView = allowedViews.find((view) => getPathForView(profile?.rol, view) === location.pathname)
+    ?? (profile && location.pathname === getRoleBasePath(profile.rol) ? allowedViews[0] : undefined)
 
   useEffect(() => {
     if (!authenticated) {
@@ -79,7 +119,6 @@ function App() {
       try {
         const usuario = await getMyProfile()
         setProfile(usuario)
-        setActiveView(usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
         setProfileForm({
           nombre: usuario.nombre,
           email: usuario.email,
@@ -111,11 +150,11 @@ function App() {
       localStorage.setItem('techservice_token', response.token)
       setAuthenticated(true)
       setProfile(response.usuario)
-      setActiveView(response.usuario.rol === 'ADMIN' || response.usuario.rol === 'TECNICO' ? 'operaciones' : 'perfil')
       setProfileForm({
         nombre: response.usuario.nombre,
         email: response.usuario.email,
       })
+      navigate(getRoleBasePath(response.usuario.rol), { replace: true })
     } catch (requestError) {
       setError(requestError.message)
       setLoading(false)
@@ -146,7 +185,7 @@ function App() {
         password,
       })
       setMessage(response.mensaje)
-      setAuthView('login')
+      navigate('/login', { replace: true })
       form.reset()
     } catch (requestError) {
       setError(requestError.message)
@@ -160,6 +199,7 @@ function App() {
     setAuthenticated(false)
     setProfile(null)
     setLoading(false)
+    navigate('/login', { replace: true })
   }
 
   function handleProfileChange(event) {
@@ -228,14 +268,38 @@ function App() {
     return <main className="page"><p>Cargando perfil...</p></main>
   }
 
+  if (authenticated && profile) {
+    const roleBasePath = getRoleBasePath(profile.rol)
+    const isAuthPath = location.pathname === '/login' || location.pathname === '/register'
+
+    if (isAuthPath) {
+      return <Navigate to={roleBasePath} replace />
+    }
+
+    if (!activeView) {
+      return <Navigate to={roleBasePath} replace />
+    }
+  } else if (authenticated) {
+    return (
+      <main className="page">
+        <p className="alert error" role="alert">
+          {error || 'No fue posible verificar tu sesión.'}
+        </p>
+        <button type="button" onClick={handleLogout}>Volver al inicio de sesión</button>
+      </main>
+    )
+  } else if (!authenticated && location.pathname !== '/login' && location.pathname !== '/register') {
+    return <Navigate to="/login" replace />
+  }
+
   if (!authenticated) {
     return (
       <main className="page login-page">
         <header>
           <p className="eyebrow">TechService</p>
-          <h1>{authView === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
+          <h1>{requestedAuthView === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
           <p>
-            {authView === 'login'
+            {requestedAuthView === 'login'
               ? 'Accede para consultar y actualizar tu perfil.'
               : 'Regístrate para acceder a los servicios de TechService.'}
           </p>
@@ -245,7 +309,7 @@ function App() {
         {error && <p className="alert error">{error}</p>}
 
         <section className="card login-card">
-          {authView === 'login' ? (
+          {requestedAuthView === 'login' ? (
             <form onSubmit={handleLogin}>
               <label htmlFor="login-email">Correo electrónico</label>
               <input
@@ -270,9 +334,9 @@ function App() {
                 className="text-button"
                 type="button"
                 onClick={() => {
-                  setAuthView('register')
                   setError('')
                   setMessage('')
+                  navigate('/register')
                 }}
               >
                 ¿Aún no tienes cuenta? Regístrate
@@ -325,9 +389,9 @@ function App() {
                 className="text-button"
                 type="button"
                 onClick={() => {
-                  setAuthView('login')
                   setError('')
                   setMessage('')
+                  navigate('/login')
                 }}
               >
                 Ya tengo una cuenta
@@ -339,19 +403,17 @@ function App() {
     )
   }
 
-  const isStaff = profile?.rol === 'ADMIN' || profile?.rol === 'TECNICO'
   const viewLabels = isStaff
     ? [
         ['perfil', 'Mi cuenta'],
-        ...(profile?.rol === 'ADMIN' ? [['usuarios', 'Usuarios']] : []),
-        ['clientes', 'Clientes'],
-        ['historial', 'Historial'],
+      ['clientes', 'Clientes'],
+      ['historial', 'Historial de equipos'],
         ['operaciones', 'Operaciones'],
-        ['repuestos', 'Repuestos'],
-        ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+      ['repuestos', 'Repuestos'],
+      ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
         ['cotizacion', 'Cotizaciones'],
       ]
-    : [['perfil', 'Mi cuenta']]
+    : [['perfil', 'Mi cuenta'], ['historial', 'Historial de equipos']]
 
   return (
     <main className="page dashboard-page">
@@ -373,7 +435,7 @@ function App() {
             type="button"
             key={view}
             onClick={() => {
-              setActiveView(view)
+              navigate(getPathForView(profile.rol, view))
               setMessage('')
               setError('')
             }}
@@ -393,7 +455,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Trazabilidad de órdenes' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -519,8 +581,9 @@ function App() {
         )}
         </div>
 
+        {activeView === 'historial' && <EquipmentHistoryPanel isStaff={isStaff} />}
         {activeView === 'usuarios' && profile?.rol === 'ADMIN' && <UsersPanel />}
-        {activeView === 'clientes' && isStaff && <ClientsPanel userRole={profile?.rol} />}
+        {activeView === 'clientes' && isStaff && <ClientsPanel />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
         {activeView === 'cotizacion' && isStaff && <QuotePanel />}
@@ -530,4 +593,4 @@ function App() {
   )
 }
 
-export default App
+export default App
