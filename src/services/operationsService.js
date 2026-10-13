@@ -9,6 +9,15 @@ export function getEquipmentById(equipmentId) {
   return apiRequest(`/equipos/${equipmentId}`)
 }
 
+export async function getMyEquipmentList() {
+  const response = await apiRequest('/equipos/mis-equipos')
+  return response.equipos
+}
+
+export function getEquipmentHistory(equipmentId) {
+  return apiRequest(`/equipos/${equipmentId}/historial`)
+}
+
 export function registerEquipment(data) {
   return apiRequest('/equipos', {
     method: 'POST',

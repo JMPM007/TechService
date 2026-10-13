@@ -7,7 +7,9 @@ import {
   listarEquipos,
   obtenerEquipoPorId,
   obtenerEquipoPorMarcaYSerial,
+  obtenerEquiposDelUsuario,
   obtenerEquiposPorCliente,
+  obtenerHistorialServiciosEquipo,
 } from '../models/equiposModel.js'
 
 export async function registrarEquipo(req, res) {
@@ -48,6 +50,16 @@ export async function obtenerEquiposCliente(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'No fue posible obtener los equipos' })
+  }
+}
+
+export async function obtenerMisEquipos(req, res) {
+  try {
+    const equipos = await obtenerEquiposDelUsuario(req.user.id)
+    return res.json({ success: true, equipos })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ mensaje: 'No fue posible obtener tus equipos.' })
   }
 }
 
@@ -135,3 +147,28 @@ export async function editarFichaEquipo(req, res) {
     return res.status(500).json({ mensaje: 'No fue posible actualizar la ficha técnica.' })
   }
 }
+
+export async function consultarHistorialEquipo(req, res) {
+  const equipoId = Number(req.params.equipoId)
+  if (!Number.isInteger(equipoId) || equipoId <= 0) {
+    return res.status(400).json({ mensaje: 'El identificador del equipo no es válido.' })
+  }
+
+  try {
+    const usuarioId = req.user.rol === 'CLIENTE' ? req.user.id : null
+    const resultado = await obtenerHistorialServiciosEquipo(equipoId, usuarioId)
+    if (!resultado) {
+      return res.status(404).json({ mensaje: 'El equipo no existe o no pertenece a tu cuenta.' })
+    }
+    return res.json({
+      success: true,
+      mensaje: resultado.historial.length
+        ? undefined
+        : 'El equipo existe, pero no tiene servicios previos.',
+      ...resultado,
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ mensaje: 'No fue posible consultar el historial del equipo.' })
+  }
+} 
