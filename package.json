@@ -14,7 +14,8 @@
     "is-extglob": "^2.1.1",
     "lightningcss-win32-x64-msvc": "^1.32.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
