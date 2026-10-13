@@ -220,7 +220,7 @@ function QuotePanel({ isStaff, isAdmin }) {
   const calculatedTotal = quote.conceptos.reduce(
     (sum, concepto) => sum + Number(concepto.cantidad || 0) * Number(concepto.precioUnitario || 0),
     0,
-  )
+  ) + laborServices.reduce((sum, service) => sum + Number(service.costo || 0), 0)
 
   return (
     <section className="card quote-card">
