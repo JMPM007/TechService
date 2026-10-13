@@ -138,6 +138,22 @@ CREATE TABLE IF NOT EXISTS cotizacion_decisiones (
     INDEX idx_decisiones_cotizacion_fecha (cotizacion_id, registrado_en, id)
 );
 
+CREATE TABLE IF NOT EXISTS servicios_mano_obra (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    costo DECIMAL(12, 2) NOT NULL,
+    tiempo_minutos INT NULL,
+    registrado_por INT NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
+    FOREIGN KEY (registrado_por) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    CHECK (costo >= 0),
+    CHECK (tiempo_minutos IS NULL OR tiempo_minutos > 0),
+    INDEX idx_mano_obra_orden (orden_id, id)
+);
+
 CREATE TABLE IF NOT EXISTS repuestos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,

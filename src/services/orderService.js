@@ -66,3 +66,27 @@ export function registerOrderQuoteDecision(orderId, estado) {
     body: JSON.stringify({ estado }),
   })
 }
+
+export function getLaborServices(orderId) {
+  return apiRequest(`/ordenes/${orderId}/mano-obra`)
+}
+
+export function createLaborService(orderId, data) {
+  return apiRequest(`/ordenes/${orderId}/mano-obra`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function updateLaborService(orderId, serviceId, data) {
+  return apiRequest(`/ordenes/${orderId}/mano-obra/${serviceId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteLaborService(orderId, serviceId) {
+  return apiRequest(`/ordenes/${orderId}/mano-obra/${serviceId}`, {
+    method: 'DELETE',
+  })
+}
