@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
+import { findUserAuthStatus } from '../models/userModel.js'
 
-export function authenticateToken(req, res, next) {
+export async function authenticateToken(req, res, next) {
   const authorization = req.headers.authorization
 
   if (!authorization) {
@@ -23,25 +24,40 @@ export function authenticateToken(req, res, next) {
     })
   }
 
+  let payload
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET)
-    const userId = Number(payload.sub ?? payload.id)
+    payload = jwt.verify(token, process.env.JWT_SECRET)
+  } catch {
+    return res.status(401).json({
+      mensaje: 'La sesión no es válida o ha expirado.',
+    })
+  }
 
-    if (!Number.isInteger(userId) || userId <= 0) {
-      return res.status(401).json({
-        mensaje: 'El token no contiene un usuario válido.',
+  const userId = Number(payload.sub ?? payload.id)
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({
+      mensaje: 'El token no contiene un usuario válido.',
+    })
+  }
+
+  try {
+    const dbUser = await findUserAuthStatus(userId)
+    if (!dbUser || Number(dbUser.activo) === 0) {
+      return res.status(403).json({
+        mensaje: 'Esta cuenta ha sido desactivada o ya no existe.',
       })
     }
 
     req.user = {
       id: userId,
-      rol: payload.rol ?? null,
+      rol: dbUser.rol,
     }
 
     return next()
-  } catch {
-    return res.status(401).json({
-      mensaje: 'La sesión no es válida o ha expirado.',
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({
+      mensaje: 'No fue posible validar la sesión.',
     })
   }
 }
