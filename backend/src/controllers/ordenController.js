@@ -86,6 +86,7 @@ export async function actualizarEstadoOrden(req, res) {
     return res.json({ mensaje: 'Estado actualizado correctamente.', orden: await obtenerOrden(ordenId) })
   } catch (error) {
     if (error.code === 'SAME_STATUS') return res.status(409).json({ mensaje: error.message })
+    if (error.code === 'QUOTE_NOT_APPROVED') return res.status(409).json({ mensaje: error.message })
     console.error(error)
     return res.status(500).json({ mensaje: 'No fue posible actualizar el estado.' })
   }

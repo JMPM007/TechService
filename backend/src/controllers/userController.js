@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import process from 'node:process'
-import { createUser, findUserByEmail } from '../models/userModel.js'
+import { createClientUser, findUserByEmail } from '../models/userModel.js'
 
 function publicUser(user) {
   return {
@@ -91,16 +91,15 @@ export async function registerUser(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12)
-    const id = await createUser({
+    const { id, clienteId } = await createClientUser({
       nombre,
       email,
       password: passwordHash,
-      rol: 'CLIENTE',
     })
 
     return res.status(201).json({
       mensaje: 'Usuario registrado correctamente.',
-      usuario: { id, nombre, email, rol: 'CLIENTE' },
+      usuario: { id, nombre, email, rol: 'CLIENTE', clienteInfo: clienteId },
     })
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {

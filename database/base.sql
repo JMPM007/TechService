@@ -9,3 +9,4 @@ INSERT INTO clientes (cedula, nombre, telefono, email) VALUES
 ("100123456", "Juan Barrios", "3004112899", "carlos@gmail.com"),
 ("100987654", "Andrea Rodriguez", "3045702349", "andrea@gmail.com")
 ON DUPLICATE KEY UPDATE id = id;
+
