@@ -51,7 +51,7 @@ function getAllowedViews(role) {
   if (role === 'TECNICO') {
     return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'diagnostico', 'cotizacion']
   }
-  return ['perfil']
+  return ['perfil', 'cotizacion']
 }
 
 function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
@@ -411,7 +411,7 @@ function App() {
       ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
         ['cotizacion', 'Cotizaciones'],
       ]
-    : [['perfil', 'Mi cuenta'], ['historial', 'Historial de equipos']]
+    : [['perfil', 'Mi cuenta'], ['historial', 'Historial de equipos'], ['cotizacion', 'Cotización']]
 
   return (
     <main className="page dashboard-page">
@@ -453,7 +453,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : activeView === 'cotizacion' && !isStaff ? 'Decisión de cotización' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -583,7 +583,7 @@ function App() {
         {activeView === 'clientes' && isStaff && <ClientsPanel />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
-        {activeView === 'cotizacion' && isStaff && <QuotePanel />}
+        {activeView === 'cotizacion' && <QuotePanel isStaff={isStaff} isAdmin={profile?.rol === 'ADMIN'} />}
         {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}
       </section>
     </main>

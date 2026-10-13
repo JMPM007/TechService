@@ -127,6 +127,17 @@ CREATE TABLE IF NOT EXISTS cotizacion_conceptos (
     CHECK (precio_unitario >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS cotizacion_decisiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cotizacion_id INT NOT NULL,
+    estado ENUM('APROBADA', 'RECHAZADA') NOT NULL,
+    usuario_id INT NOT NULL,
+    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    INDEX idx_decisiones_cotizacion_fecha (cotizacion_id, registrado_en, id)
+);
+
 CREATE TABLE IF NOT EXISTS repuestos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
