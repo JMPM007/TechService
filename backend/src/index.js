@@ -32,18 +32,15 @@ app.use('/api/consultas', consultaRoutes)
 
 app.get('/api/test-db', async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id, nombre, email, rol, creado_en AS creadoEn FROM usuarios',
-    )
+    await pool.query('SELECT 1 AS ok')
 
     res.json({
+      status: 'ok',
       mensaje: 'Conexión a la base de datos exitosa.',
-      usuarios: rows,
     })
-  } catch (error) {
-    console.error(error)
-
+  } catch {
     res.status(500).json({
+      status: 'error',
       mensaje: 'No fue posible conectar con la base de datos.',
     })
   }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getClients, registerClient } from '../services/clientService'
+import { getClients, registerClient, deleteClient } from '../services/clientService'
 
 const emptyClient = {
   cedula: '',
@@ -9,13 +9,14 @@ const emptyClient = {
   email: '',
 }
 
-export default function ClientsPanel() {
+export default function ClientsPanel({ userRole }) {
   const [clients, setClients] = useState([])
   const [search, setSearch] = useState('')
   const [form, setForm] = useState(emptyClient)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
 
   useEffect(() => {
     let active = true
@@ -57,6 +58,26 @@ export default function ClientsPanel() {
     }
   }
 
+  async function handleDeleteClient(client) {
+    const confirmMessage = `¿Estás seguro de que deseas eliminar al cliente "${client.nombres} ${client.apellidos}" (Cédula: ${client.cedula})?\nEsta acción no se puede deshacer.`
+    if (!window.confirm(confirmMessage)) return
+
+    setError('')
+    setMessage('')
+    setDeletingId(client.id)
+
+    try {
+      const response = await deleteClient(client.id)
+      setMessage(response.mensaje || 'Cliente eliminado correctamente.')
+      const refreshed = await getClients(search)
+      setClients(refreshed.clientes)
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <div className="operations-grid">
       <section className="card">
@@ -93,7 +114,20 @@ export default function ClientsPanel() {
                   <span>Cédula: {client.cedula} · Teléfono: {client.telefono}</span>
                   <small>{client.email}</small>
                 </div>
-                <b>#{client.id}</b>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <b>#{client.id}</b>
+                  {userRole === 'ADMIN' && (
+                    <button
+                      type="button"
+                      className="text-button"
+                      style={{ color: 'var(--danger, #c00)', cursor: 'pointer' }}
+                      onClick={() => handleDeleteClient(client)}
+                      disabled={deletingId === client.id}
+                    >
+                      {deletingId === client.id ? 'Eliminando...' : 'Eliminar'}
+                    </button>
+                  )}
+                </div>
               </article>
             ))}
             {!clients.length && <p className="empty-state">No hay clientes para mostrar.</p>}
@@ -103,3 +137,4 @@ export default function ClientsPanel() {
     </div>
   )
 }
+
