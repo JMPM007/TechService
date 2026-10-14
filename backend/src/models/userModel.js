@@ -80,6 +80,14 @@ export async function findUserById(id) {
   return rows[0] ?? null
 }
 
+export async function findUserAuthStatus(id) {
+  const [rows] = await pool.execute(
+    'SELECT id, rol, activo FROM usuarios WHERE id = ?',
+    [id],
+  )
+  return rows[0] ?? null
+}
+
 async function cambiarEstadoUsuarioTransaccionalUnaVez(id, nuevoEstado) {
   const connection = await pool.getConnection()
   try {
