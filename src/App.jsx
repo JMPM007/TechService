@@ -18,6 +18,7 @@ import ReceiptPanel from './components/ReceiptPanel'
 import OrderTrackingPanel from './components/OrderTrackingPanel'
 import StatusDashboardPanel from './components/StatusDashboardPanel'
 import GlobalSearchPanel from './components/GlobalSearchPanel'
+import UsersPanel from './components/UsersPanel'
 import './App.css'
 
 const emptyPasswordForm = {
@@ -38,6 +39,7 @@ const viewSegments = {
   seguimiento: 'seguimiento',
   dashboard: 'dashboard',
   busqueda: 'busqueda',
+  usuarios: 'usuarios',
 }
 
 function getRoleBasePath(role) {
@@ -54,7 +56,7 @@ function getPathForView(role, view) {
 
 function getAllowedViews(role) {
   if (role === 'ADMIN') {
-    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'cotizacion', 'dashboard', 'busqueda']
+    return ['operaciones', 'perfil', 'usuarios', 'clientes', 'historial', 'repuestos', 'recepcion', 'cotizacion', 'dashboard', 'busqueda']
   }
   if (role === 'TECNICO') {
     return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'diagnostico', 'cotizacion', 'dashboard', 'busqueda']
@@ -464,7 +466,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'recepcion' ? 'Comprobantes de recepción' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : activeView === 'seguimiento' ? 'Seguimiento de mi orden' : activeView === 'dashboard' ? 'Órdenes por estado' : activeView === 'busqueda' ? 'Búsqueda global' : activeView === 'cotizacion' && !isStaff ? 'Decisión de cotización' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'recepcion' ? 'Comprobantes de recepción' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : activeView === 'seguimiento' ? 'Seguimiento de mi orden' : activeView === 'dashboard' ? 'Órdenes por estado' : activeView === 'busqueda' ? 'Búsqueda global' : activeView === 'cotizacion' && !isStaff ? 'Decisión de cotización' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -591,6 +593,7 @@ function App() {
         </div>
 
         {activeView === 'historial' && <EquipmentHistoryPanel isStaff={isStaff} />}
+        {activeView === 'usuarios' && profile?.rol === 'ADMIN' && <UsersPanel />}
         {activeView === 'recepcion' && <ReceiptPanel isStaff={isStaff} />}
         {activeView === 'clientes' && isStaff && <ClientsPanel />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
