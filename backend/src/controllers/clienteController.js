@@ -1,4 +1,9 @@
-import { buscarClientePorCedulaOEmail, crearCliente, listarClientes } from '../models/clienteModel.js'
+import {
+  buscarClientePorCedulaOEmail,
+  crearCliente,
+  listarClientes,
+  eliminarClienteTransaccional,
+} from '../models/clienteModel.js'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const TELEFONO_REGEX = /^[0-9]{7,15}$/
@@ -56,5 +61,27 @@ export async function buscarClientePorCedula(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: 'No fue posible buscar el cliente' })
+  }
+}
+
+// ── HU-09: Eliminar cliente ───────────────────────────────────────────────
+export async function eliminarClienteById(req, res) {
+  const id = Number(req.params.id)
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID de cliente inválido.' })
+  }
+
+  try {
+    const resultado = await eliminarClienteTransaccional(id)
+    if (!resultado.exito) {
+      return res.status(resultado.codigo).json({ error: resultado.error })
+    }
+
+    return res.json({
+      mensaje: `Cliente "${resultado.cliente.nombres} ${resultado.cliente.apellidos}" eliminado correctamente.`,
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: 'No fue posible eliminar el cliente.' })
   }
 }
