@@ -61,7 +61,7 @@ function getAllowedViews(role) {
   if (role === 'TECNICO') {
     return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'diagnostico', 'cotizacion', 'dashboard', 'busqueda']
   }
-  return ['perfil', 'recepcion', 'cotizacion', 'seguimiento']
+  return ['perfil', 'recepcion', 'historial', 'cotizacion', 'seguimiento']
 }
 
 function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
