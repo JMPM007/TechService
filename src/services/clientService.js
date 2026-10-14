@@ -11,3 +11,11 @@ export function registerClient(data) {
     body: JSON.stringify(data),
   })
 }
+
+/**
+ * HU-09 — Eliminar cliente por id.
+ * @param {number} id
+ */
+export function deleteClient(id) {
+  return apiRequest(`/clientes/${id}`, { method: 'DELETE' })
+}

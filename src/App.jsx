@@ -14,6 +14,10 @@ import OperationsPanel from './components/OperationsPanel'
 import ClientsPanel from './components/ClientsPanel'
 import RepuestosPanel from './components/RepuestosPanel'
 import EquipmentHistoryPanel from './components/EquipmentHistoryPanel'
+import ReceiptPanel from './components/ReceiptPanel'
+import OrderTrackingPanel from './components/OrderTrackingPanel'
+import StatusDashboardPanel from './components/StatusDashboardPanel'
+import GlobalSearchPanel from './components/GlobalSearchPanel'
 import UsersPanel from './components/UsersPanel'
 import './App.css'
 
@@ -29,8 +33,12 @@ const viewSegments = {
   historial: 'historial',
   operaciones: '',
   repuestos: 'repuestos',
+  recepcion: 'recepcion',
   diagnostico: 'diagnostico',
   cotizacion: 'cotizaciones',
+  seguimiento: 'seguimiento',
+  dashboard: 'dashboard',
+  busqueda: 'busqueda',
   usuarios: 'usuarios',
 }
 
@@ -48,12 +56,12 @@ function getPathForView(role, view) {
 
 function getAllowedViews(role) {
   if (role === 'ADMIN') {
-    return ['operaciones', 'perfil', 'usuarios', 'clientes', 'historial', 'repuestos', 'cotizacion']
+    return ['operaciones', 'perfil', 'usuarios', 'clientes', 'historial', 'repuestos', 'recepcion', 'cotizacion', 'dashboard', 'busqueda']
   }
   if (role === 'TECNICO') {
-    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'diagnostico', 'cotizacion']
+    return ['operaciones', 'perfil', 'clientes', 'historial', 'repuestos', 'recepcion', 'diagnostico', 'cotizacion', 'dashboard', 'busqueda']
   }
-  return ['perfil']
+  return ['perfil', 'recepcion', 'cotizacion', 'seguimiento']
 }
 
 function PasswordInput({ id, name, value, onChange, autoComplete, minLength, maxLength }) {
@@ -410,10 +418,13 @@ function App() {
       ['historial', 'Historial de equipos'],
         ['operaciones', 'Operaciones'],
       ['repuestos', 'Repuestos'],
+      ['recepcion', 'Comprobantes'],
       ...(profile?.rol === 'TECNICO' ? [['diagnostico', 'Diagnóstico']] : []),
+        ['dashboard', 'Dashboard'],
+        ['busqueda', 'Búsqueda global'],
         ['cotizacion', 'Cotizaciones'],
       ]
-    : [['perfil', 'Mi cuenta'], ['historial', 'Historial de equipos']]
+    : [['perfil', 'Mi cuenta'], ['recepcion', 'Comprobantes'], ['historial', 'Historial de equipos'], ['cotizacion', 'Cotización'], ['seguimiento', 'Seguimiento de orden']]
 
   return (
     <main className="page dashboard-page">
@@ -455,7 +466,7 @@ function App() {
         <div className="content-heading">
           <div>
             <p className="section-kicker">{viewLabels.find(([view]) => view === activeView)?.[1]}</p>
-            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : 'Presupuestos de reparación'}</h2>
+            <h2>{activeView === 'perfil' ? 'Tu cuenta' : activeView === 'usuarios' ? 'Administración de usuarios' : activeView === 'clientes' ? 'Directorio y registro de clientes' : activeView === 'historial' ? 'Historial de servicios del equipo' : activeView === 'operaciones' ? 'Equipos, órdenes y técnicos' : activeView === 'repuestos' ? 'Inventario de repuestos' : activeView === 'recepcion' ? 'Comprobantes de recepción' : activeView === 'diagnostico' ? 'Diagnóstico técnico' : activeView === 'seguimiento' ? 'Seguimiento de mi orden' : activeView === 'dashboard' ? 'Órdenes por estado' : activeView === 'busqueda' ? 'Búsqueda global' : activeView === 'cotizacion' && !isStaff ? 'Decisión de cotización' : 'Presupuestos de reparación'}</h2>
           </div>
           <span className="role-badge">{profile?.rol}</span>
         </div>
@@ -583,12 +594,17 @@ function App() {
 
         {activeView === 'historial' && <EquipmentHistoryPanel isStaff={isStaff} />}
         {activeView === 'usuarios' && profile?.rol === 'ADMIN' && <UsersPanel />}
+        {activeView === 'recepcion' && <ReceiptPanel isStaff={isStaff} />}
         {activeView === 'clientes' && isStaff && <ClientsPanel />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
-        {activeView === 'cotizacion' && isStaff && <QuotePanel />}
+        {activeView === 'cotizacion' && <QuotePanel isStaff={isStaff} isAdmin={profile?.rol === 'ADMIN'} />}
         {activeView === 'operaciones' && isStaff && <OperationsPanel profile={profile} />}
+        {activeView === 'seguimiento' && !isStaff && <OrderTrackingPanel />}
+        {activeView === 'dashboard' && isStaff && <StatusDashboardPanel />}
+        {activeView === 'busqueda' && isStaff && <GlobalSearchPanel />}
       </section>
+
     </main>
   )
 }

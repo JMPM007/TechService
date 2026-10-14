@@ -171,6 +171,25 @@ export async function cambiarEstadoOrden({ ordenId, estadoNuevo, usuarioId, obse
       error.code = 'SAME_STATUS'
       throw error
     }
+    const estadosQueRequierenAprobacion = [
+      'EN_REPARACION',
+      'EN_PROCESO',
+      'EN_ESPERA_REPUESTO',
+      'REPARADA',
+      'COMPLETADO',
+      'ENTREGADA',
+    ]
+    if (estadosQueRequierenAprobacion.includes(estadoNuevo)) {
+      const [quotes] = await connection.query(
+        'SELECT estado FROM cotizaciones WHERE orden_id = ? LIMIT 1',
+        [ordenId],
+      )
+      if (!quotes.length || quotes[0].estado !== 'APROBADA') {
+        const error = new Error('La reparación solo puede continuar cuando la cotización está aprobada por el cliente.')
+        error.code = 'QUOTE_NOT_APPROVED'
+        throw error
+      }
+    }
     await connection.query(
       'UPDATE ordenes_servicio SET estado = ? WHERE id = ?',
       [estadoNuevo, ordenId],

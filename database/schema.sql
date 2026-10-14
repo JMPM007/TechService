@@ -86,6 +86,21 @@ CREATE TABLE IF NOT EXISTS historial_estados_orden (
     INDEX idx_historial_orden_fecha (orden_id, creado_en, id)
 );
 
+CREATE TABLE IF NOT EXISTS comprobantes_recepcion (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL UNIQUE,
+    numero_comprobante VARCHAR(40) NOT NULL UNIQUE,
+    generado_por INT NOT NULL,
+    falla_reportada TEXT NOT NULL,
+    estado_fisico TEXT NOT NULL,
+    accesorios TEXT NOT NULL,
+    observaciones TEXT NULL,
+    fecha_recepcion TIMESTAMP NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
+    FOREIGN KEY (generado_por) REFERENCES usuarios(id) ON DELETE RESTRICT
+);
+
 CREATE TABLE IF NOT EXISTS diagnosticos_orden (
     id INT AUTO_INCREMENT PRIMARY KEY,
     orden_id INT NOT NULL UNIQUE,
@@ -126,6 +141,33 @@ CREATE TABLE IF NOT EXISTS cotizacion_conceptos (
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
     CHECK (cantidad > 0),
     CHECK (precio_unitario >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS cotizacion_decisiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cotizacion_id INT NOT NULL,
+    estado ENUM('APROBADA', 'RECHAZADA') NOT NULL,
+    usuario_id INT NOT NULL,
+    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    INDEX idx_decisiones_cotizacion_fecha (cotizacion_id, registrado_en, id)
+);
+
+CREATE TABLE IF NOT EXISTS servicios_mano_obra (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id INT NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    costo DECIMAL(12, 2) NOT NULL,
+    tiempo_minutos INT NULL,
+    registrado_por INT NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_servicio(id) ON DELETE RESTRICT,
+    FOREIGN KEY (registrado_por) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    CHECK (costo >= 0),
+    CHECK (tiempo_minutos IS NULL OR tiempo_minutos > 0),
+    INDEX idx_mano_obra_orden (orden_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS repuestos (
