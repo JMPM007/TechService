@@ -1,3 +1,24 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-printable,
+  .receipt-printable * {
+    visibility: visible;
+  }
+
+  .receipt-printable {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
 .page {
   max-width: 1000px;
   margin: 0 auto;
@@ -309,6 +330,156 @@ button:disabled {
   color: #52606d;
 }
 
+.equipment-history-card {
+  margin-top: 24px;
+}
+
+.equipment-history-card > p {
+  max-width: 760px;
+  line-height: 1.55;
+}
+
+.equipment-history-step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.equipment-history-step-number {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #0f766e;
+  font-weight: 700;
+}
+
+.equipment-history-step-content {
+  min-width: 0;
+}
+
+.equipment-history-step-content h3 {
+  margin: 2px 0 6px;
+  color: #102a43;
+}
+
+.equipment-history-step-content > p {
+  margin: 0 0 12px;
+  color: #52606d;
+}
+
+.equipment-search-form,
+.equipment-select-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.equipment-search-form input,
+.equipment-select-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #aebdca;
+  border-radius: 8px;
+  color: #243b53;
+  background: #ffffff;
+  font: inherit;
+}
+
+.equipment-search-form input:focus,
+.equipment-select-form select:focus {
+  border-color: #0f766e;
+  outline: 3px solid rgba(15, 118, 110, 0.18);
+}
+
+.equipment-history-button {
+  min-height: 44px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.equipment-history-button.secondary {
+  color: #0f766e;
+  background: #d9f2ef;
+}
+
+.equipment-history-button.secondary:hover:not(:disabled) {
+  background: #bce5df;
+}
+
+.equipment-history-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.equipment-history-results {
+  margin-top: 24px;
+}
+
+.equipment-history-list {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding-left: 22px;
+}
+
+.equipment-history-order {
+  padding: 16px;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+
+.equipment-history-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.equipment-history-order-header span {
+  color: #52606d;
+  font-size: 0.9rem;
+}
+
+.equipment-history-list .equipment-history-order p {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 560px) {
+  .equipment-search-form,
+  .equipment-select-form {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-history-button {
+    width: 100%;
+  }
+
+  .equipment-history-order-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
 .diagnosis-card {
   margin-top: 24px;
 }
@@ -397,9 +568,225 @@ button:disabled {
   margin: 0;
 }
 
+.repuestos-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.inventory-section {
+  min-width: 0;
+}
+
+.inventory-section .list-heading {
+  margin-top: 0;
+}
+
+.inventory-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.inventory-stat {
+  padding: 14px 16px;
+  border: 1px solid #d7e0e8;
+  border-radius: 10px;
+  background: #f6fafb;
+}
+
+.inventory-stat span,
+.inventory-stat strong {
+  display: block;
+}
+
+.inventory-stat span,
+.inventory-item-details span {
+  color: #627d98;
+  font-size: 0.76rem;
+}
+
+.inventory-stat strong {
+  margin-top: 4px;
+  color: #0f766e;
+  font-size: 1.3rem;
+}
+
+.inventory-stat-warning {
+  background: #fffaf0;
+  border-color: #f2d49b;
+}
+
+.inventory-stat-warning strong {
+  color: #a15c07;
+}
+
+.inventory-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.inventory-item {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #d7e0e8;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.inventory-item-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inventory-item-id {
+  color: #627d98;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inventory-item h3 {
+  margin: 5px 0 0;
+  color: #102a43;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.stock-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #166534;
+  background: #dcfce7;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.stock-badge.low {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+.inventory-description {
+  margin: 12px 0;
+  color: #52606d;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.inventory-item-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e6edf2;
+}
+
+.inventory-item-details span,
+.inventory-item-details strong {
+  display: block;
+}
+
+.inventory-item-details strong {
+  margin-top: 4px;
+  color: #102a43;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.inventory-message {
+  margin: 14px 0 0;
+  color: #52606d;
+}
+
+.repuestos-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+.repuestos-action-card {
+  min-width: 0;
+  height: 100%;
+  padding: 20px;
+}
+
+.repuestos-action-card h2 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+
+.repuestos-action-card > p:not(.alert) {
+  min-height: 2.8em;
+  color: #52606d;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.repuestos-action-card label {
+  margin-top: 14px;
+}
+
+.repuestos-action-card textarea,
+.repuestos-action-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #aebdca;
+  border-radius: 6px;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+}
+
+.repuestos-action-card textarea {
+  resize: vertical;
+}
+
+.repuestos-action-card textarea:focus,
+.repuestos-action-card select:focus {
+  border-color: #0f766e;
+  outline: 3px solid rgba(15, 118, 110, 0.18);
+}
+
+.repuestos-action-card button {
+  width: 100%;
+}
+
+.repuestos-field-row {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 10px;
+}
+
 @media (max-width: 560px) {
   .equipment-summary {
     grid-template-columns: 1fr;
+  }
+
+  .inventory-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-card-grid,
+  .repuestos-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .repuestos-actions {
+    gap: 14px;
+  }
+
+  .repuestos-action-card > p:not(.alert) {
+    min-height: 0;
   }
 
   .dashboard-page {
@@ -461,6 +848,16 @@ button:disabled {
 
   .inline-form button {
     margin-top: 12px;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 1050px) {
+  .inventory-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .repuestos-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -745,4 +1142,79 @@ button:focus-visible {
 
 .equipment-lookup .inline-form input {
   max-width: none;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background-color: #b9dbb4;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.dashboard-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-total {
+  margin: 1rem 0;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.8rem;
+}
+
+.status-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #b9dbb4;
+  border-radius: 10px;
+  background-color: #f2f9f1;
+}
+
+.status-tile.empty {
+  background-color: #ffffff;
+  opacity: 0.7;
+}
+
+.status-count {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.results-wrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.results-table th {
+  text-align: left;
+  padding: 0.6rem;
+  background-color: #f2f9f1;
+  border-bottom: 2px solid #b9dbb4;
+}
+
+.results-table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #eef2ef;
 }

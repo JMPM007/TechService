@@ -1,7 +1,7 @@
 import { apiRequest } from './api'
 
 export async function agregarRepuestoAOrdenService(orden_id, repuesto_id, cantidad) {
-  return apiRequest('/ordenes-repuestos', {
+  return apiRequest('/ordenes-repuestos/orden', {
     method: 'POST',
     body: JSON.stringify({
       orden_id: Number(orden_id),

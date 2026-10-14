@@ -6,6 +6,7 @@ import {
   crearCotizacion,
   obtenerContextoOrden,
   obtenerCotizacion,
+  registrarDecisionCotizacion,
 } from '../models/cotizacionModel.js'
 
 function normalizarConceptos(conceptos) {
@@ -126,6 +127,9 @@ export async function cambiarEstadoCotizacion(req, res) {
   if (!ordenId || !ESTADOS_COTIZACION.includes(estado)) {
     return res.status(400).json({ mensaje: 'La orden o el estado de cotización no son válidos.' })
   }
+  if (estado !== 'CANCELADA') {
+    return res.status(403).json({ mensaje: 'La aprobación o el rechazo deben registrarse mediante la decisión del cliente.' })
+  }
 
   try {
     const cotizacion = await obtenerCotizacion(ordenId)
@@ -136,5 +140,27 @@ export async function cambiarEstadoCotizacion(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ mensaje: 'No fue posible actualizar el estado de la cotización.' })
+  }
+}
+
+export async function registrarDecision(req, res) {
+  const ordenId = ordenIdDesdeRequest(req)
+  const { estado } = req.body
+  if (!ordenId || !['APROBADA', 'RECHAZADA'].includes(estado)) {
+    return res.status(400).json({ mensaje: 'La orden y una decisión válida son obligatorias.' })
+  }
+
+  try {
+    const resultado = await registrarDecisionCotizacion({ ordenId, usuarioId: req.user.id, estado })
+    if (resultado === 'NOT_FOUND') return res.status(404).json({ mensaje: 'La orden no tiene cotización registrada.' })
+    if (resultado === 'FORBIDDEN') return res.status(403).json({ mensaje: 'Solo el cliente propietario puede decidir esta cotización.' })
+    if (resultado === 'ALREADY_DECIDED') return res.status(409).json({ mensaje: 'La cotización ya tiene una decisión registrada.' })
+    return res.json({
+      mensaje: `Cotización ${estado === 'APROBADA' ? 'aprobada' : 'rechazada'} correctamente.`,
+      cotizacion: await obtenerCotizacion(ordenId),
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ mensaje: 'No fue posible registrar la decisión de la cotización.' })
   }
 }
