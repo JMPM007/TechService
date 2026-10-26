@@ -15,7 +15,11 @@ on:
 jobs:
   eslint:
     name: Verificar calidad del codigo
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
 
     steps:
       - name: Descargar repositorio
