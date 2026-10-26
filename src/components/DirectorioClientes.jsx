@@ -27,8 +27,15 @@ export default function DirectorioClientes({ onCrearEquipoConCliente }) {
         if (active) {
           const list = Array.isArray(data) ? data : (data.clientes || [])
           setClients(list)
-          if (!selectedClient && list.length > 0 && !term) {
-            selectClient(list[0])
+          if (list.length >0 && !term) {
+            setSelectedClient(current => {
+              if (current) return current
+              return list[0]
+            })
+            setForm(current =>{
+              if (current.cedula) return current
+              return {...emptyClient, ...list[0]}
+            })  
           }
         }
       } catch (error) {
