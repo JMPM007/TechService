@@ -7,6 +7,7 @@ on:
       - main
       - develop
       - feature/HU-37-Despliegue_continuo
+      - test/validacion-despliegue
   workflow_dispatch:
 
 jobs:
