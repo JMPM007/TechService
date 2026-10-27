@@ -1,8 +1,10 @@
-const API_URL = 'http://localhost:3000/api/usuarios';
+import { API_URL } from './api.js'
+
+const AUTH_URL = `${API_URL}/usuarios`
 
 
 export const registerUser = async (userData) => {
-  const response = await fetch(`${API_URL}/register`, {
+  const response = await fetch(`${AUTH_URL}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -14,7 +16,7 @@ export const registerUser = async (userData) => {
 
 
 export const loginUser = async (credentials) => {
-  const response = await fetch(`${API_URL}/login`,{
+  const response = await fetch(`${AUTH_URL}/login`,{
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -26,7 +28,7 @@ export const loginUser = async (credentials) => {
 
 
 export const getProfile = async (token) => {
-  const response = await fetch(`${API_URL}/perfil`, {
+  const response = await fetch(`${AUTH_URL}/perfil`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

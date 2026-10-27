@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from "../services/api.js"
 import '../Css/EquiposForm.css';
 
 export function EquiposForm() {
@@ -51,7 +52,7 @@ export function EquiposForm() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/clientes/cedula/${formData.cedula.trim()}`, {
+      const response = await fetch(`${API_URL}/clientes/cedula/${formData.cedula.trim()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export function EquiposForm() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/equipos', {
+      const response = await fetch(`${API_URL}/equipos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

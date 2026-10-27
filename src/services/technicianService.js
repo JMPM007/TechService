@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000/api/tecnicos";
+import { API_URL } from './api.js'
+
+const TECHNICIAN_URL = `${API_URL}/tecnicos`
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -12,7 +14,7 @@ const getAuthHeaders = () => {
 };
 
 export const registerTechnician = async (technicianData) => {
-  const response = await fetch(`${API_URL}/register`, {
+  const response = await fetch(`${TECHNICIAN_URL}/register`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(technicianData)
@@ -33,7 +35,7 @@ export const registerTechnician = async (technicianData) => {
 };
 
 export const updateTechnicianStatusService = async (tecnicoId, nuevoEstado, token) => {
-  const response = await fetch(`${API_URL}/${tecnicoId}/estado`, {
+  const response = await fetch(`${TECHNICIAN_URL}/${tecnicoId}/estado`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -51,7 +53,7 @@ export const updateTechnicianStatusService = async (tecnicoId, nuevoEstado, toke
 };
 
 export const getTechniciansService = async (token) => {
-  const response = await fetch(API_URL, {
+  const response = await fetch(TECHNICIAN_URL, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

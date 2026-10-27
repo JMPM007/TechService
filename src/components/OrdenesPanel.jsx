@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { API_URL } from "../services/api.js"
 import "./OrdenesPanel.css"
 
 const ESTADOS_VALIDOS = ["Registrada", "Asignada", "En proceso", "Finalizada", "Cerrada"]
@@ -13,7 +14,7 @@ export default function OrdenesPanel() {
         setCargando(true)
         setErrorGeneral("")
         try {
-            const respuesta = await fetch("http://localhost:3000/api/ordenes")
+            const respuesta = await fetch(`${API_URL}/ordenes`)
             const resultado = await respuesta.json()
             if (!respuesta.ok) throw new Error(resultado.error || "Error al cargar órdenes")
             setOrdenes(resultado.ordenes)
@@ -35,7 +36,7 @@ export default function OrdenesPanel() {
 
         setAccionEnCurso(ordenId)
         try {
-            const respuesta = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/asignar`, {
+            const respuesta = await fetch(`${API_URL}/ordenes/${ordenId}/asignar`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ tecnicoId: Number(tecnicoId) })
@@ -58,7 +59,7 @@ export default function OrdenesPanel() {
 
         setAccionEnCurso(ordenId)
         try {
-            const respuesta = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/estado`, {
+            const respuesta = await fetch(`${API_URL}/ordenes/${ordenId}/estado`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ estado: nuevoEstado, tecnicoId })
@@ -79,7 +80,7 @@ export default function OrdenesPanel() {
 
         setAccionEnCurso(ordenId)
         try {
-            const respuesta = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/cerrar`, {
+            const respuesta = await fetch(`${API_URL}/ordenes/${ordenId}/cerrar`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ observaciones })

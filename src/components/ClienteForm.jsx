@@ -1,5 +1,8 @@
 import { useState } from "react"
+import { API_URL } from "../services/api.js"
 import '../Css/ClienteForm.css'
+
+
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const TELEFONO_REGEX = /^[0-9]{7,15}$/
@@ -58,7 +61,7 @@ export function ClienteForm() {
 
         setEnviando(true)
         try {
-            const respuesta = await fetch("http://localhost:3000/api/clientes", {
+            const respuesta = await fetch(`${API_URL}/clientes`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datos)
