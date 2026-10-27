@@ -1,3 +1,0 @@
-const variableSinUsar = 10;
-
-
