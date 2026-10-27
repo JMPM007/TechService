@@ -1,0 +1,45 @@
+
+name: Despliegue continuo TechService
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      - name: Verificar codigo con ESLint
+        run: npm run lint
+
+      - name: Compilar frontend
+        run: npm run build
+
+      - name: Instalar dependencias del backend
+        working-directory: backend
+        run: npm ci
+
+      - name: Desplegar backend en Render
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY }}
+        run: curl -fsS -X POST "$DEPLOY_HOOK"
+
+      - name: Desplegar frontend en Render
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY }}
+        run: curl -fsS -X POST "$DEPLOY_HOOK"
