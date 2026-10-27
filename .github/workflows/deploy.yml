@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - develop
+      - feature/HU-37-Despliegue_continuo
   workflow_dispatch:
 
 jobs:
