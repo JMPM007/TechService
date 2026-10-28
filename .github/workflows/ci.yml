@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - main
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  # HU-05: validación de pull requests (pruebas + cobertura)
+  pruebas-y-cobertura:
+    name: Pruebas unitarias y cobertura
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas unitarias
+        run: npm test
+
+      - name: Cobertura mínima del 70%
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        run: npm run test:coverage
+
+  # HU-06: build y setup del entorno base
+  build-y-setup:
+    name: Build y setup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      - name: Construir el frontend
+        run: npm run build
+
+      - name: Instalar dependencias del backend
+        run: npm ci
+        working-directory: backend
+
+      - name: Levantar el backend y comprobar que responde
+        working-directory: backend
+        env:
+          JWT_SECRET: clave-solo-para-ci
+          PORT: 3000
+        run: |
+          node src/index.js &
+          SERVER_PID=$!
+          sleep 5
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/ruta-inexistente)
+          kill $SERVER_PID
+          test "$STATUS" = "404"
