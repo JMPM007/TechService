@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/validators/**\" --test-coverage-lines=70",
     "migrate:hu03-hu05": "node src/config/migrateHu03Hu05.js"
   },
   "keywords": [],
