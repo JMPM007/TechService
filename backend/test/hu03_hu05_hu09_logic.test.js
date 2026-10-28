@@ -1,10 +1,10 @@
 /**
  * backend/test/hu03_hu05_hu09_logic.test.js
  * Pruebas unitarias de las reglas de negocio de HU-03, HU-05 y HU-09.
- * Ejecutable con: node backend/test/hu03_hu05_hu09_logic.test.js
+ * Ejecutable con: npm test (desde la carpeta backend)
  */
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import { test } from 'vitest'
 import { ROLES_VALIDOS } from '../src/models/userModel.js'
 
 test('HU-03: ROLES_VALIDOS contiene exactamente los roles autorizados por la plataforma', () => {
