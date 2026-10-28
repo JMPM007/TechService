@@ -61,6 +61,38 @@ Subir la rama: git push -u origin feature/gestion-clientes
 Abrir un Pull Request hacia develop, con al menos 1 revisión de otro integrante.
 Resolver conflictos en local (git merge develop dentro de tu rama) antes de aprobar.
 
+## Pruebas (QA)
+
+Framework: **Vitest** en frontend y backend. Se eligió porque el proyecto usa
+módulos ES nativos y Vite: Vitest los ejecuta sin configuración adicional
+(Jest requiere transpilar ESM), permite simular módulos con `vi.mock` y trae
+medición de cobertura con `@vitest/coverage-v8`.
+
+| Parte    | Ubicación de las pruebas        | Entorno | Configuración                      |
+|----------|---------------------------------|---------|------------------------------------|
+| Backend  | `backend/test/**/*.test.js`     | Node    | `backend/vitest.config.js`         |
+| Frontend | `src/**/*.test.{js,jsx}`        | jsdom   | `vite.config.js` (bloque `test`)   |
+
+Comandos (en la raíz para el frontend, o dentro de `backend/` para el backend):
+
+```bash
+npm install            # instala dependencias, incluidas las de pruebas
+npm test               # ejecuta las pruebas una vez
+npm run test:watch     # vuelve a ejecutar al guardar cambios
+npm run test:coverage  # genera el reporte de cobertura en coverage/
+```
+
+Reglas:
+- Las pruebas **no usan la base de datos real**. En el backend el pool de MySQL
+  (`src/config/db.js`) o el modelo se reemplazan con `vi.mock`; las variables
+  de entorno de prueba son ficticias y están en `backend/vitest.config.js`.
+- En el frontend `fetch` se simula con `vi.stubGlobal('fetch', ...)`.
+- Los archivos se nombran `<modulo>.test.js` (o `.test.jsx` si renderizan JSX).
+- `backend/test/helpers/http.js` trae `mockRequest` y `mockResponse` para probar
+  controladores sin levantar Express.
+- Ejemplos de referencia: `backend/test/entornoPruebas.test.js` y
+  `src/test/entornoPruebas.test.jsx`.
+
 Equipo
 Juan Miguel Perdomo Muñoz
 Juan Camilo Gonzales Rodas
