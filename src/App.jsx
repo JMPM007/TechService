@@ -414,6 +414,7 @@ function App() {
   const viewLabels = isStaff
     ? [
         ['perfil', 'Mi cuenta'],
+      ...(profile?.rol === 'ADMIN' ? [['usuarios', 'Usuarios']] : []),
       ['clientes', 'Clientes'],
       ['historial', 'Historial de equipos'],
         ['operaciones', 'Operaciones'],
@@ -595,7 +596,7 @@ function App() {
         {activeView === 'historial' && <EquipmentHistoryPanel isStaff={isStaff} />}
         {activeView === 'usuarios' && profile?.rol === 'ADMIN' && <UsersPanel />}
         {activeView === 'recepcion' && <ReceiptPanel isStaff={isStaff} />}
-        {activeView === 'clientes' && isStaff && <ClientsPanel />}
+        {activeView === 'clientes' && isStaff && <ClientsPanel userRole={profile?.rol} />}
         {activeView === 'repuestos' && isStaff && <RepuestosPanel />}
         {activeView === 'diagnostico' && isStaff && <DiagnosisPanel />}
         {activeView === 'cotizacion' && <QuotePanel isStaff={isStaff} isAdmin={profile?.rol === 'ADMIN'} />}

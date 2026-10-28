@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npm --prefix backend test",
+    "coverage": "npm --prefix backend run coverage"
   },
   "dependencies": {
     "@rolldown/pluginutils": "^1.0.1",

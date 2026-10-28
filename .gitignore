@@ -26,6 +26,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Coverage
+backend/coverage/
+coverage/
 
-
-
+# Local agent artifacts
+.agents/
+.agents-install-report.md

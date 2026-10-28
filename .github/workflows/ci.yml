@@ -1,0 +1,91 @@
+name: CI - Integracion Continua y Cobertura QA (HU-33, HU-34)
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'feature-*'
+      - 'feature/*'
+      - 'feature'
+      - 'feat/**'
+      - 'feat-*'
+      - 'HU-*'
+      - 'hu-*'
+  pull_request:
+    branches:
+      - 'develop'
+      - 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-frontend:
+    name: Frontend - Validacion y Compilacion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      - name: Ejecutar linter del frontend
+        run: npm run lint
+
+      - name: Compilar codigo del frontend (build)
+        run: npm run build
+
+      - name: Reporte de estado frontend
+        if: always()
+        run: |
+          echo "### Resultado Frontend 🎨" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lint:** ${{ job.status == 'success' && 'Exitoso ✅' || 'Con errores ❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Compilación (Build Vite):** ${{ job.status == 'success' && 'Exitosa ✅' || 'Con errores ❌' }}" >> $GITHUB_STEP_SUMMARY
+
+  validate-backend:
+    name: Backend - Pruebas Automatizadas
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias del backend
+        run: npm ci
+
+      - name: Ejecutar pruebas automatizadas con medición de cobertura
+        env:
+          COVERAGE_THRESHOLD: 70
+        run: npm run coverage
+
+      - name: Subir artefacto de cobertura QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/coverage/
+          if-no-files-found: warn
+
+      - name: Reporte de estado backend
+        if: always()
+        run: |
+          echo "### Resultado Backend ⚙️" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pruebas unitarias y de logica:** ${{ job.status == 'success' && 'Aprobadas ✅' || 'Fallidas ❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cobertura QA:** Reporte generado en artefacto backend-coverage-report y archivo backend/coverage/coverage-summary.json" >> $GITHUB_STEP_SUMMARY

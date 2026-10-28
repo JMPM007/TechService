@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../services/api'
 
 const emptyClient = { cedula: '', nombre: '', direccion: '', telefono: '', email: '' }
@@ -11,9 +11,14 @@ export default function DirectorioClientes({ onCrearEquipoConCliente }) {
   const [form, setForm] = useState(emptyClient)
   const [status, setStatus] = useState({ type: '', message: '' })
   const [loading, setLoading] = useState(false)
+  const selectedClientRef = useRef(null)
   const [showNewClientForm, setShowNewClientForm] = useState(false)
   const [newClient, setNewClient] = useState({ cedula: '', nombre: '', direccion: '', telefono: '', email: '' })
   const [newClientStatus, setNewClientStatus] = useState({ type: '', message: '' })
+
+  useEffect(() => {
+    selectedClientRef.current = selectedClient
+  }, [selectedClient])
 
   // Cargar clientes iniciales o al buscar
   useEffect(() => {
@@ -27,7 +32,7 @@ export default function DirectorioClientes({ onCrearEquipoConCliente }) {
         if (active) {
           const list = Array.isArray(data) ? data : (data.clientes || [])
           setClients(list)
-          if (!selectedClient && list.length > 0 && !term) {
+          if (!selectedClientRef.current && list.length > 0 && !term) {
             selectClient(list[0])
           }
         }

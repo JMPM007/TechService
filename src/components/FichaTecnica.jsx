@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../services/api'
 import EditarEquipoModal from './EditarEquipoModal'
 
@@ -13,7 +13,25 @@ export default function FichaTecnica({ onCrearOrdenConEquipo }) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState(null)
 
-  const loadEquipos = async (term = '') => {
+  const fetchDetalle = useCallback(async (id) => {
+    try {
+      setLoading(true)
+      setSearchNotFoundMessage('')
+      const data = await api.getEquipoById(id)
+      if (data.equipo) {
+        setEquipoDetalle(data.equipo)
+        setSelectedEquipoId(data.equipo.id)
+      }
+    } catch (err) {
+      console.error('Error al obtener ficha:', err)
+      setSearchNotFoundMessage(err.message || 'El equipo consultado no existe o no se encuentra registrado.')
+      setEquipoDetalle(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const loadEquipos = useCallback(async (term = '') => {
     try {
       setLoading(true)
       const data = await api.getEquipos(term)
@@ -38,29 +56,11 @@ export default function FichaTecnica({ onCrearOrdenConEquipo }) {
     } finally {
       setLoading(false)
     }
-  }
-
-  const fetchDetalle = async (id) => {
-    try {
-      setLoading(true)
-      setSearchNotFoundMessage('')
-      const data = await api.getEquipoById(id)
-      if (data.equipo) {
-        setEquipoDetalle(data.equipo)
-        setSelectedEquipoId(data.equipo.id)
-      }
-    } catch (err) {
-      console.error('Error al obtener ficha:', err)
-      setSearchNotFoundMessage(err.message || 'El equipo consultado no existe o no se encuentra registrado.')
-      setEquipoDetalle(null)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [fetchDetalle, selectedEquipoId])
 
   useEffect(() => {
     loadEquipos()
-  }, [])
+  }, [loadEquipos])
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
