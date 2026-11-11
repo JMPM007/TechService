@@ -93,6 +93,14 @@ Reglas:
 - Ejemplos de referencia: `backend/test/entornoPruebas.test.js` y
   `src/test/entornoPruebas.test.jsx`.
 
+Recuperación de contraseña (HU-04)
+Crear la tabla de tokens: cd backend && npm run migrate:hu04
+Variables de entorno del backend (backend/.env):
+FRONTEND_URL	URL del frontend usada en el enlace del correo (por defecto http://localhost:5173)
+PASSWORD_RESET_TTL_MINUTES	Minutos de vigencia del enlace (por defecto 30)
+SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM	Servidor de correo para enviar el enlace
+Sin SMTP_HOST, en desarrollo el enlace se imprime en la consola del backend; en producción (NODE_ENV=production) el envío falla y se registra el error.
+
 Equipo
 Juan Miguel Perdomo Muñoz
 Juan Camilo Gonzales Rodas

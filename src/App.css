@@ -304,6 +304,13 @@ button:disabled {
   text-decoration: underline;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  color: #52606d;
+  font-size: 0.82rem;
+}
+
 .history-card {
   grid-column: 1 / -1;
 }

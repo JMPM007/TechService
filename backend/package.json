@@ -9,6 +9,7 @@
     "dev": "node --watch src/index.js",
     "test": "vitest run",
     "migrate:hu03-hu05": "node src/config/migrateHu03Hu05.js",
+    "migrate:hu04": "node src/config/migrateHu04.js",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -21,7 +22,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.24.3"
+    "mysql2": "^3.24.3",
+    "nodemailer": "^7.0.13"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.5",

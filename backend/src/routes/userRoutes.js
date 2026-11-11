@@ -7,6 +7,11 @@ import {
   editUser,
   toggleUserStatus,
 } from '../controllers/userController.js'
+import {
+  requestPasswordReset,
+  resetPassword,
+  verifyResetToken,
+} from '../controllers/passwordResetController.js'
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js'
 
 const router = Router()
@@ -14,6 +19,11 @@ const router = Router()
 // Rutas públicas
 router.post('/', registerUser)
 router.post('/login', loginUser)
+
+// Recuperación de contraseña (HU-04)
+router.post('/recuperar-contrasena', requestPasswordReset)
+router.get('/restablecer-contrasena/:token', verifyResetToken)
+router.post('/restablecer-contrasena', resetPassword)
 
 // Rutas de administración — solo ADMIN
 router.get(

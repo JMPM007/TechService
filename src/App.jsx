@@ -5,7 +5,10 @@ import {
   getMyProfile,
   loginUser,
   registerUser,
+  requestPasswordReset,
+  resetPassword,
   updateMyProfile,
+  verifyResetToken,
 } from './services/profileService'
 import { getOrderHistory } from './services/orderService'
 import DiagnosisPanel from './components/DiagnosisPanel'
@@ -25,6 +28,31 @@ const emptyPasswordForm = {
   contrasenaActual: '',
   nuevaContrasena: '',
   confirmacionContrasena: '',
+}
+
+const authViewsByPath = {
+  '/login': 'login',
+  '/register': 'register',
+  '/recuperar-contrasena': 'forgot',
+  '/restablecer-contrasena': 'reset',
+}
+
+const authViewTexts = {
+  login: ['Iniciar sesión', 'Accede para consultar y actualizar tu perfil.'],
+  register: ['Crear cuenta', 'Regístrate para acceder a los servicios de TechService.'],
+  forgot: ['Recuperar contraseña', 'Ingresa el correo de tu cuenta y te enviaremos un enlace para restablecerla.'],
+  reset: ['Nueva contraseña', 'Define una nueva contraseña para tu cuenta.'],
+}
+
+// Misma política que valida el backend en HU-04.
+function getPasswordPolicyError(password) {
+  if (password.length < 8 || new TextEncoder().encode(password).length > 72) {
+    return 'La contraseña debe tener entre 8 y 72 caracteres.'
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    return 'La contraseña debe incluir al menos una mayúscula, una minúscula y un número.'
+  }
+  return null
 }
 
 const viewSegments = {
@@ -112,7 +140,11 @@ function App() {
   const [orderId, setOrderId] = useState('')
   const [orderHistory, setOrderHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
-  const requestedAuthView = location.pathname === '/register' ? 'register' : 'login'
+  const [resetTokenCheck, setResetTokenCheck] = useState({ token: null, status: 'checking' })
+  const [submitting, setSubmitting] = useState(false)
+  const requestedAuthView = authViewsByPath[location.pathname] ?? 'login'
+  const resetToken = new URLSearchParams(location.search).get('token') ?? ''
+  const resetTokenStatus = resetTokenCheck.token === resetToken ? resetTokenCheck.status : 'checking'
   const isStaff = profile?.rol === 'ADMIN' || profile?.rol === 'TECNICO'
   const allowedViews = getAllowedViews(profile?.rol)
   const activeView = allowedViews.find((view) => getPathForView(profile?.rol, view) === location.pathname)
@@ -141,6 +173,26 @@ function App() {
     loadProfile()
     return undefined
   }, [authenticated])
+
+  useEffect(() => {
+    if (authenticated || requestedAuthView !== 'reset') {
+      return undefined
+    }
+
+    let cancelled = false
+
+    verifyResetToken(resetToken)
+      .then(() => {
+        if (!cancelled) setResetTokenCheck({ token: resetToken, status: 'valid' })
+      })
+      .catch(() => {
+        if (!cancelled) setResetTokenCheck({ token: resetToken, status: 'invalid' })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [authenticated, requestedAuthView, resetToken])
 
   async function handleLogin(event) {
     event.preventDefault()
@@ -200,6 +252,68 @@ function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleForgotPassword(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+    setSubmitting(true)
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+
+    try {
+      const response = await requestPasswordReset(formData.get('forgot-email'))
+      setMessage(response.mensaje)
+      form.reset()
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleResetPassword(event) {
+    event.preventDefault()
+    setMessage('')
+    setError('')
+
+    const formData = new FormData(event.currentTarget)
+    const nuevaContrasena = formData.get('reset-password')
+    const confirmacionContrasena = formData.get('reset-confirmation')
+    const policyError = getPasswordPolicyError(nuevaContrasena)
+
+    if (policyError) {
+      setError(policyError)
+      return
+    }
+    if (nuevaContrasena !== confirmacionContrasena) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const response = await resetPassword({
+        token: resetToken,
+        nuevaContrasena,
+        confirmacionContrasena,
+      })
+      setMessage(response.mensaje)
+      navigate('/login', { replace: true })
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function goToAuthView(path) {
+    setError('')
+    setMessage('')
+    navigate(path)
   }
 
   function handleLogout() {
@@ -278,7 +392,7 @@ function App() {
 
   if (authenticated && profile) {
     const roleBasePath = getRoleBasePath(profile.rol)
-    const isAuthPath = location.pathname === '/login' || location.pathname === '/register'
+    const isAuthPath = Object.hasOwn(authViewsByPath, location.pathname)
 
     if (isAuthPath) {
       return <Navigate to={roleBasePath} replace />
@@ -296,7 +410,7 @@ function App() {
         <button type="button" onClick={handleLogout}>Volver al inicio de sesión</button>
       </main>
     )
-  } else if (!authenticated && location.pathname !== '/login' && location.pathname !== '/register') {
+  } else if (!authenticated && !Object.hasOwn(authViewsByPath, location.pathname)) {
     return <Navigate to="/login" replace />
   }
 
@@ -305,12 +419,8 @@ function App() {
       <main className="page login-page">
         <header>
           <p className="eyebrow">TechService</p>
-          <h1>{requestedAuthView === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h1>
-          <p>
-            {requestedAuthView === 'login'
-              ? 'Accede para consultar y actualizar tu perfil.'
-              : 'Regístrate para acceder a los servicios de TechService.'}
-          </p>
+          <h1>{authViewTexts[requestedAuthView][0]}</h1>
+          <p>{authViewTexts[requestedAuthView][1]}</p>
         </header>
 
         {message && <p className="alert success" role="status">{message}</p>}
@@ -341,6 +451,13 @@ function App() {
               <button
                 className="text-button"
                 type="button"
+                onClick={() => goToAuthView('/recuperar-contrasena')}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+              <button
+                className="text-button"
+                type="button"
                 onClick={() => {
                   setError('')
                   setMessage('')
@@ -350,6 +467,76 @@ function App() {
                 ¿Aún no tienes cuenta? Regístrate
               </button>
             </form>
+          ) : requestedAuthView === 'forgot' ? (
+            <form onSubmit={handleForgotPassword}>
+              <label htmlFor="forgot-email">Correo electrónico</label>
+              <input
+                id="forgot-email"
+                name="forgot-email"
+                type="email"
+                maxLength="100"
+                autoComplete="email"
+                required
+              />
+
+              <button type="submit" disabled={submitting}>
+                {submitting ? 'Enviando...' : 'Enviar enlace de recuperación'}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => goToAuthView('/login')}
+              >
+                Volver al inicio de sesión
+              </button>
+            </form>
+          ) : requestedAuthView === 'reset' ? (
+            resetTokenStatus === 'checking' ? (
+              <p>Validando enlace...</p>
+            ) : resetTokenStatus === 'invalid' ? (
+              <div>
+                <p className="alert error" role="alert">
+                  El enlace no es válido o ha expirado. Solicita uno nuevo.
+                </p>
+                <button type="button" onClick={() => goToAuthView('/recuperar-contrasena')}>
+                  Solicitar un nuevo enlace
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => goToAuthView('/login')}
+                >
+                  Volver al inicio de sesión
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetPassword}>
+                <label htmlFor="reset-password">Nueva contraseña</label>
+                <PasswordInput
+                  id="reset-password"
+                  name="reset-password"
+                  minLength="8"
+                  maxLength="72"
+                  autoComplete="new-password"
+                />
+                <small className="field-hint">
+                  Mínimo 8 caracteres, con al menos una mayúscula, una minúscula y un número.
+                </small>
+
+                <label htmlFor="reset-confirmation">Confirmar nueva contraseña</label>
+                <PasswordInput
+                  id="reset-confirmation"
+                  name="reset-confirmation"
+                  minLength="8"
+                  maxLength="72"
+                  autoComplete="new-password"
+                />
+
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Guardando...' : 'Guardar nueva contraseña'}
+                </button>
+              </form>
+            )
           ) : (
             <form onSubmit={handleRegister}>
               <label htmlFor="register-name">Nombre completo</label>

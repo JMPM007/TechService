@@ -14,6 +14,24 @@ export function registerUser(data) {
   })
 }
 
+export function requestPasswordReset(email) {
+  return publicApiRequest('/usuarios/recuperar-contrasena', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export function verifyResetToken(token) {
+  return publicApiRequest(`/usuarios/restablecer-contrasena/${encodeURIComponent(token)}`)
+}
+
+export function resetPassword(data) {
+  return publicApiRequest('/usuarios/restablecer-contrasena', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
 export async function getMyProfile() {
   const response = await apiRequest('/perfil/me')
   return response.usuario
