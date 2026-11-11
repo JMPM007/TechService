@@ -12,6 +12,7 @@ import repuestosRoutes from './routes/repuestosRoutes.js'
 import manoObraRoutes from './routes/manoObraRoutes.js'
 import comprobanteRecepcionRoutes from './routes/comprobanteRecepcionRoutes.js'
 import consultaRoutes from './routes/consultaRoutes.js'
+import reporteRoutes from './routes/reporteRoutes.js'
 
 const app = express()
 const port = Number(process.env.PORT) || 3000
@@ -29,6 +30,7 @@ app.use('/api/ordenes-repuestos', repuestosRoutes)
 app.use('/api/ordenes', manoObraRoutes)
 app.use('/api/ordenes', comprobanteRecepcionRoutes)
 app.use('/api/consultas', consultaRoutes)
+app.use('/api/reportes', reporteRoutes)
 
 app.get('/api/test-db', async (req, res) => {
   try {
