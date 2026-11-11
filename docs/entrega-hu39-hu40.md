@@ -29,9 +29,9 @@ git switch -c feature/HU-39-HU-40-documentacion
  git push -u origin feature/HU-39-HU-40-documentacion
 ```
 
-Abrir en GitHub **Compare & pull request**, base develop, compare feature/HU-39-HU-40-documentacion. Verificar diferencias con la base antes de publicar; pedir revisión a otro integrante. No hacer push directo a main.
+Abrir en GitHub **Compare & pull request**, base develop. Verificar diferencias con la base antes de publicar; pedir revisión a otro integrante. No hacer push directo a main.
 
-Título sugerido: `docs: documentar arquitectura, API y datos (HU-39 y HU-40)`.
+Título sugerido: `docs: documentar arquitectura, API y datos (HU-39 y HU-40)` por ejemplo.
 
 Descripción sugerida:
 
@@ -45,7 +45,7 @@ Descripción sugerida:
 
 Al cambiar rutas comprobar método, prefijo montado, middleware, controlador y modelo. Al cambiar schema.sql actualizar todas las columnas, FK, CHECK, índices y cardinalidades del diagrama. Revisar Mermaid en GitHub al abrir el PR y comprobar que los enlaces Markdown son navegables. Las reglas de negocio describen las validaciones efectivas; no convertir un flujo sugerido en garantía que el código no impone.
 
-## Integración
+## Integración Ejemplo
 
 Rama de entrega: feature/HU-39-HU-40-documentacion, creada desde origin/develop (48a2f72). La documentación incorpora administración de usuarios, desactivación, recuperación de contraseña, SMTP y las 15 tablas de esa base. La integración final requiere revisión y merge del PR a develop.
 
