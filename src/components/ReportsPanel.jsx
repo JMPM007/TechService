@@ -17,6 +17,7 @@ export default function ReportsPanel() {
     setError('')
 
     if (desde > hasta) {
+      setReport(null)
       setError('La fecha inicial no puede ser posterior a la fecha final.')
       return
     }
