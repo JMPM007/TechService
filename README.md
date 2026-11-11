@@ -1,65 +1,30 @@
-## Descripción
+# TechService
 
-Los pequeños y medianos negocios de mantenimiento y reparación de computadores,
-celulares y otros dispositivos tecnológicos suelen gestionar clientes, equipos y
-Órdenes de forma dispersa: cuadernos, hojas de cálculo o herramientas aisladas.
-Esto genera pérdida o duplicidad de información, dificultad para conocer el estado
-de una reparación, confusión sobre los equipos que permanecen en el local y
-Ausencia de un historial organizado de servicios.
+Plataforma académica para gestionar clientes, equipos y órdenes de servicio técnico. Proyecto Informático I, Universidad Autónoma de Occidente, Cali, 2026.
 
-Este proyecto es una plataforma web que centraliza la gestión y el seguimiento
-de las órdenes de servicio técnico, desde la recepción del equipo hasta su entrega
-y la consulta del historial. Permite registrar clientes, dispositivos y técnicos;
-documentar fallas y diagnósticos; generar cotizaciones con aprobación o rechazo;
-registrar servicios y repuestos utilizados; controlar el acceso mediante roles
-(Administrador, Técnico y Cliente) y conservar un historial de las operaciones
-relevantes.
+## Documentación HU-39 y HU-40
 
-Objetivo: desarrollar en un máximo de 11 semanas una plataforma funcional que
-Mejore la organización, la trazabilidad y la eficiencia del proceso de
-Servicio técnico.
+- [Arquitectura y tecnologías](docs/arquitectura.md): capas, versiones, carpetas, JWT y roles.
+- [Instalación](docs/instalacion.md): requisitos, entorno, MySQL y ejecución.
+- [API](docs/api.md): endpoints, permisos, parámetros, respuestas y ejemplos.
+- [Modelo de datos](docs/datos.md): diagrama ER y diccionario de schema.sql.
+- [Reglas de negocio](docs/reglas-negocio.md): estados y restricciones.
+- [CI y despliegue](docs/despliegue.md): estado actual y procedimiento Render.
+- [Entrega por PR](docs/entrega-hu39-hu40.md): criterios, limitaciones e integración.
 
-> Proyecto académico (MVP) desarrollado para Proyecto Informático I,
-> Universidad Autónoma de Occidente, Cali, 2026.
+Documentación contrastada con el código de `48a2f72`. Las guías distinguen comportamiento implementado y configuración pendiente.
 
+## Inicio local
 
-Capa	Tecnología
-Frontend	React + Vite
-Backend	Node.js + Express
-Base de datos	mysql2
-Autenticación	JWT + bcrypt
-Control de versiones	Git + GitHub
+Preparar MySQL y variables siguiendo la [guía de instalación](docs/instalacion.md). Desde la raíz:
 
-Estructura del repositorio.
-├── main    
-├── develop
-├── feature/HU16-17-18-gestion-ordenes
-├── feature/HU-01_Crear_usuario-HU-02_login
-├──feature/HU-11-LISTA-DISPONIBILIDAD
-├──feature/HU-12-REGISTRAR-EQUIPO
-├──feature/hu-06-perfil-contrasena
-├──feature/hu-08-client-management
-├──feature/hu-10-Registrar-Tecnico
-├──feature/registro-cliente
-...
+```sh
+npm ci
+npm --prefix backend ci
+```
 
-
-
-Rama	Propósito	Reglas
-main	Versión estable / demostrable	Solo recibe merges desde develop vía Pull Request. Nunca se hace push directo.
-develop	Integración del trabajo en curso	Recibe las ramas de trabajo vía Pull Request.
-feature/<nombre>	Nueva funcionalidad	Sale de develop, vuelve a develop.
-fix/<nombre>	Corrección de errores	Sale de develop, vuelve a develop.
-docs/<nombre>	Documentación	Sale de develop, vuelve a develop.
-hotfix/<nombre>	Error urgente en main	Sale de main, vuelve a main y a develop.
-
-Flujo de trabajo
-Actualizar develop: git checkout develop && git pull origin develop
-Crear rama de trabajo: git checkout -b feature/gestion-clientes
-Hacer commits pequeños siguiendo la convención.
-Subir la rama: git push -u origin feature/gestion-clientes
-Abrir un Pull Request hacia develop, con al menos 1 revisión de otro integrante.
-Resolver conflictos en local (git merge develop dentro de tu rama) antes de aprobar.
+Terminal 1: `cd backend` y `npm run dev`. Terminal 2, raíz: `npm run dev`.
+Frontend: `http://localhost:5173`. API: `http://localhost:3000/api`.
 
 ## Pruebas (QA)
 
@@ -93,18 +58,9 @@ Reglas:
 - Ejemplos de referencia: `backend/test/entornoPruebas.test.js` y
   `src/test/entornoPruebas.test.jsx`.
 
-Recuperación de contraseña (HU-04)
-Crear la tabla de tokens: cd backend && npm run migrate:hu04
-Variables de entorno del backend (backend/.env):
-FRONTEND_URL	URL del frontend usada en el enlace del correo (por defecto http://localhost:5173)
-PASSWORD_RESET_TTL_MINUTES	Minutos de vigencia del enlace (por defecto 30)
-SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM	Servidor de correo para enviar el enlace
-Sin SMTP_HOST, en desarrollo el enlace se imprime en la consola del backend; en producción (NODE_ENV=production) el envío falla y se registra el error.
 
-Equipo
-Juan Miguel Perdomo Muñoz
-Juan Camilo Gonzales Rodas
-José David Aguirre
-Gabriel Armando Gil
+## Colaboración
 
+Rama de trabajo → Pull Request a `develop` → revisión de otro integrante → integración. `main` recibe la versión estable desde `develop` mediante PR. Actualizar las guías en el mismo PR que modifica API o SQL. No subir `.env`, contraseñas ni tokens.
 
+Equipo: Juan Miguel Perdomo Muñoz, Juan Camilo Gonzales Rodas, José David Aguirre y Gabriel Armando Gil.
