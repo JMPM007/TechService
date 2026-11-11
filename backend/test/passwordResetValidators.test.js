@@ -3,7 +3,7 @@
  * de solicitudes y generación del token temporal.
  */
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import { test } from 'vitest'
 import {
   isValidResetToken,
   validateForgotPassword,
