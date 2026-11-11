@@ -1225,3 +1225,30 @@ button:focus-visible {
   padding: 0.6rem;
   border-bottom: 1px solid #eef2ef;
 }
+
+.nav-icon-reportes::after { content: "\2261"; }
+
+.report-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.report-filters > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.report-toolbar {
+  margin-top: 1rem;
+}
+
+.report-summary .status-count {
+  font-size: 1.4rem;
+}
+
+.reports-card h3 {
+  margin: 1.5rem 0 0.75rem;
+}

@@ -5,7 +5,7 @@ import {
     searchGlobal,
 } from '../models/consultaModel.js'
 
-const ORDER_STATUSES = [
+export const ORDER_STATUSES = [
     'RECIBIDA',
     'PENDIENTE',
     'EN_REVISION',
